@@ -39,64 +39,71 @@ const Layout = ({ children }) => {
       name: 'Dashboard', 
       href: '/dashboard', 
       icon: Home, 
-      allowedRoles: ['admin', 'warehouse_staff', 'customer'],
+      allowedRoles: ['admin', 'warehouse', 'customer'],
       description: 'Overview and statistics'
     },
     { 
       name: 'Register Box', 
       href: '/register-box', 
       icon: Package, 
-      allowedRoles: ['admin', 'warehouse_staff'],
+      allowedRoles: ['admin', 'warehouse'],
       description: 'Add new box parcels'
     },
     { 
       name: 'Register Sack', 
       href: '/register-sack', 
       icon: Package2, 
-      allowedRoles: ['admin', 'warehouse_staff'],
+      allowedRoles: ['admin', 'warehouse'],
       description: 'Add new sack parcels'
     },
     { 
       name: 'Scan & Log', 
-      href: '/scan-log', 
+      href: '/scan-and-log', 
       icon: Scan, 
-      allowedRoles: ['admin', 'warehouse_staff'],
+      allowedRoles: ['admin', 'warehouse'],
       description: 'Update parcel status'
     },
     { 
       name: 'Map Tracker', 
-      href: '/map', 
+      href: '/map-tracker', 
       icon: Map, 
-      allowedRoles: ['admin', 'warehouse_staff'],
+      allowedRoles: ['admin', 'warehouse'],
       description: 'View parcels on map'
     },
     { 
       name: 'Track Package', 
       href: '/portal', 
       icon: Search, 
-      allowedRoles: ['admin', 'warehouse_staff', 'customer'],
+      allowedRoles: ['admin', 'warehouse', 'customer'],
       description: 'Search and track parcels'
     },
     { 
       name: 'User Management', 
-      href: '/admin', 
+      href: '/admin-panel', 
       icon: Users, 
       allowedRoles: ['admin'],
       description: 'Manage users and roles'
     },
     { 
       name: 'System Settings', 
-      href: '/admin', 
+      href: '/admin-panel', 
       icon: Settings, 
       allowedRoles: ['admin'],
       description: 'Company settings and branding'
     },
     { 
       name: 'Analytics', 
-      href: '/admin', 
+      href: '/admin-panel', 
       icon: BarChart3, 
       allowedRoles: ['admin'],
       description: 'System analytics and reports'
+    },
+    { 
+      name: 'Test Functionality', 
+      href: '/test', 
+      icon: BarChart3, 
+      allowedRoles: ['admin'],
+      description: 'Test all app features'
     },
     { 
       name: 'Messaging', 

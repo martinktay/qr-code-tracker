@@ -13,6 +13,7 @@ import AdminPanel from './pages/AdminPanel'
 import TermsPage from './pages/TermsPage'
 import PrivacyPage from './pages/PrivacyPage'
 import MapTracker from './pages/MapTracker'
+import TestFunctionality from './components/TestFunctionality'
 import { Toaster } from 'react-hot-toast'
 
 const ProtectedRoute = ({ children, allowedRoles = [] }) => {
@@ -122,6 +123,14 @@ const App = () => {
           <ProtectedRoute allowedRoles={['admin']}>
             <Layout>
               <AdminPanel />
+            </Layout>
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/test" element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <Layout>
+              <TestFunctionality />
             </Layout>
           </ProtectedRoute>
         } />
