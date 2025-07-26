@@ -19,7 +19,7 @@ import {
   TrendingUp,
   Globe,
   Database,
-  Weight,
+  Scale,
   Activity,
   Shield,
   Bell,
@@ -572,7 +572,7 @@ const Dashboard = () => {
           <div className="bg-gradient-to-br from-slate-50 to-slate-100 p-6 rounded-xl shadow-sm border border-slate-200">
             <div className="flex items-center">
               <div className="p-3 bg-slate-500 rounded-lg">
-                <Weight className="h-8 w-8 text-white" />
+                <Scale className="h-8 w-8 text-white" />
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-slate-600">Total Weight</p>
