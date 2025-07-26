@@ -5,13 +5,15 @@ import { db } from '../lib/supabase';
 import toast from 'react-hot-toast';
 import ChatWindow from '../components/ChatWindow';
 import ParcelTimelineComponent from '../components/ParcelTimeline';
+import InteractionTrail from '../components/InteractionTrail';
 import { 
   Package, 
   MapPin, 
   Calendar, 
   User, 
   MessageSquare,
-  ArrowLeft
+  ArrowLeft,
+  Activity
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -22,6 +24,7 @@ const ParcelTimeline = () => {
   const [scanHistory, setScanHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showChat, setShowChat] = useState(false);
+  const [activeTab, setActiveTab] = useState('timeline'); // 'timeline' or 'trail'
 
   useEffect(() => {
     fetchParcelData();
@@ -153,6 +156,8 @@ const ParcelTimeline = () => {
                 {getStatusText(parcel.status)}
               </span>
               
+
+              
               {/* Chat button for customers */}
               {userRole === 'customer' && (
                 <button
@@ -235,14 +240,56 @@ const ParcelTimeline = () => {
         </div>
       </div>
 
-      {/* Professional Timeline */}
+      {/* Tab Navigation */}
       <div className="mb-6">
-        <ParcelTimelineComponent 
-          parcelId={id}
-          scanHistory={scanHistory}
-          parcelData={parcel}
-        />
+        <div className="border-b border-gray-200">
+          <nav className="-mb-px flex space-x-8">
+            <button
+              onClick={() => setActiveTab('timeline')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'timeline'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <Package className="w-4 h-4 inline mr-2" />
+              Delivery Timeline
+            </button>
+            <button
+              onClick={() => setActiveTab('trail')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'trail'
+                  ? 'border-green-500 text-green-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <Activity className="w-4 h-4 inline mr-2" />
+              Interaction Trail
+            </button>
+          </nav>
+        </div>
       </div>
+
+      {/* Tab Content */}
+      {activeTab === 'timeline' && (
+        <div className="mb-6">
+          <ParcelTimelineComponent 
+            parcelId={id}
+            scanHistory={scanHistory}
+            parcelData={parcel}
+          />
+        </div>
+      )}
+
+      {activeTab === 'trail' && (
+        <div className="mb-6">
+          <InteractionTrail 
+            parcelId={id}
+            parcelType={parcel.box_id ? 'box' : 'sack'}
+            userRole={userRole}
+          />
+        </div>
+      )}
 
       {/* Chat Window */}
       {showChat && userRole === 'customer' && (
