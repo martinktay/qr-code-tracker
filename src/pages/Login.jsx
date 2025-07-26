@@ -16,7 +16,7 @@ const Login = () => {
     phone: ''
   })
 
-  const { signIn, signUp, forceLogout } = useAuth()
+  const { signIn, signUp, forceLogout, user } = useAuth()
   const navigate = useNavigate()
 
   // Only clear session if user is not already authenticated

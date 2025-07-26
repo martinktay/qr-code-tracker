@@ -29,6 +29,15 @@ END $$;
 -- In production, passwords should be properly hashed
 
 INSERT INTO user_accounts (user_id, username, hashed_password, role, email, phone) VALUES
+    -- Admin User
+    (
+        gen_random_uuid(),
+        'admin_user',
+        'admin123', -- In production, this should be hashed
+        'admin',
+        'admin@smartexporters.com',
+        '+1111111111'
+    ),
     -- Warehouse User
     (
         gen_random_uuid(),

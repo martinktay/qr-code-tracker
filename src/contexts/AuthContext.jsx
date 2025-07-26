@@ -19,7 +19,8 @@ export const AuthProvider = ({ children }) => {
   // Debug user role changes
   useEffect(() => {
     console.log('User role changed to:', userRole)
-  }, [userRole])
+    console.log('Current user state:', user)
+  }, [userRole, user])
 
   useEffect(() => {
     // Check active sessions and sets the user
@@ -103,6 +104,7 @@ export const AuthProvider = ({ children }) => {
       }
 
       console.log('Simple sign in successful:', { user: mockUser, role: data.role })
+      console.log('Setting user role to:', data.role)
       setUser(mockUser)
       setUserRole(data.role)
       setLoading(false)
@@ -155,6 +157,31 @@ export const AuthProvider = ({ children }) => {
       }
       
       console.log('Supabase Auth successful:', data)
+      
+      // After successful Supabase Auth, fetch user role from user_accounts table
+      if (data.user) {
+        try {
+          const { data: userAccount, error: roleError } = await supabase
+            .from('user_accounts')
+            .select('role')
+            .eq('user_id', data.user.id)
+            .single()
+          
+          if (!roleError && userAccount) {
+            console.log('Setting user role to:', userAccount.role)
+            setUser(data.user)
+            setUserRole(userAccount.role)
+            setLoading(false)
+          } else {
+            console.log('No user account found, using simple auth...')
+            return await simpleSignIn(email, password)
+          }
+        } catch (roleError) {
+          console.log('Error fetching user role, using simple auth...')
+          return await simpleSignIn(email, password)
+        }
+      }
+      
       return data
     } catch (error) {
       // If Supabase Auth throws an error, try simple auth

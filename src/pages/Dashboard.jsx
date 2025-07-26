@@ -29,7 +29,8 @@ import {
   UserCheck,
   PackageCheck,
   PackageX,
-  PackageSearch
+  PackageSearch,
+  User
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 
@@ -51,6 +52,7 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('overview') // 'overview', 'international', or 'warehouse'
 
   useEffect(() => {
+    console.log('Dashboard useEffect triggered - userRole:', userRole, 'user:', user)
     fetchDashboardData()
   }, [userRole, user])
 
@@ -759,6 +761,8 @@ const Dashboard = () => {
     </div>
   )
 
+  console.log('Dashboard render - loading:', loading, 'userRole:', userRole, 'user:', user)
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -812,6 +816,13 @@ const Dashboard = () => {
       {/* Admin Dashboard with Tabs */}
       {userRole === 'admin' && (
         <div className="space-y-6">
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+            <h3 className="text-lg font-semibold text-green-800 mb-2">Admin Dashboard Debug</h3>
+            <p className="text-green-700">Admin dashboard is rendering correctly!</p>
+            <p className="text-green-700">User Role: {userRole}</p>
+            <p className="text-green-700">User ID: {user?.id}</p>
+          </div>
+          <div className="space-y-6">
           {/* Tab Navigation */}
           <div className="border-b border-gray-200">
             <nav className="-mb-px flex space-x-8">
@@ -843,6 +854,7 @@ const Dashboard = () => {
           {/* Tab Content */}
           {activeTab === 'overview' && renderAdminDashboard()}
           {activeTab === 'international' && <InternationalShippingAnalytics />}
+        </div>
         </div>
       )}
 
@@ -888,7 +900,28 @@ const Dashboard = () => {
           <p className="text-red-700">Please check your authentication status. Current user: {JSON.stringify(user)}</p>
         </div>
       )}
+      
+      {/* Debug: Show what role is detected */}
+      {userRole && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+          <h3 className="text-lg font-semibold text-blue-800 mb-2">Role Detection Debug</h3>
+          <p className="text-blue-700">Detected Role: <strong>{userRole}</strong></p>
+          <p className="text-blue-700">User ID: {user?.id}</p>
+          <p className="text-blue-700">User Email: {user?.email}</p>
+        </div>
+      )}
+      
       {userRole === 'customer' && renderCustomerDashboard()}
+
+      {/* Fallback: If no specific dashboard is rendered, show a generic one */}
+      {userRole && userRole !== 'admin' && userRole !== 'warehouse_staff' && userRole !== 'customer' && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+          <h3 className="text-lg font-semibold text-yellow-800 mb-2">Generic Dashboard</h3>
+          <p className="text-yellow-700">No specific dashboard found for role: <strong>{userRole}</strong></p>
+          <p className="text-yellow-700">Showing generic dashboard...</p>
+          {renderCustomerDashboard()}
+        </div>
+      )}
 
       {/* Track Package Section */}
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl shadow-sm border border-blue-200 p-6 mb-8">
