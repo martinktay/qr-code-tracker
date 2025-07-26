@@ -131,8 +131,11 @@ export const db = {
 
   // Search operations
   async searchParcel(identifier) {
+    // Check if identifier looks like a UUID (for exact ID matching)
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(identifier)
+    
     // Search in boxes
-    const { data: boxes, error: boxError } = await supabase
+    let boxQuery = supabase
       .from('boxes')
       .select(`
         *,
@@ -143,12 +146,21 @@ export const db = {
           destination
         )
       `)
-      .or(`box_id.eq.${identifier},qr_code_url.ilike.%${identifier}%`)
+    
+    if (isUUID) {
+      // If it's a UUID, try exact match first
+      boxQuery = boxQuery.or(`box_id.eq.${identifier},qr_code_url.ilike.%${identifier}%`)
+    } else {
+      // If it's not a UUID, use ILIKE for partial matching
+      boxQuery = boxQuery.or(`box_id.ilike.%${identifier}%,qr_code_url.ilike.%${identifier}%,customers.phone.ilike.%${identifier}%`)
+    }
+    
+    const { data: boxes, error: boxError } = await boxQuery
     
     if (boxError) throw boxError
 
     // Search in sacks
-    const { data: sacks, error: sackError } = await supabase
+    let sackQuery = supabase
       .from('sacks')
       .select(`
         *,
@@ -159,7 +171,16 @@ export const db = {
           destination
         )
       `)
-      .or(`sack_id.eq.${identifier},qr_code_url.ilike.%${identifier}%`)
+    
+    if (isUUID) {
+      // If it's a UUID, try exact match first
+      sackQuery = sackQuery.or(`sack_id.eq.${identifier},qr_code_url.ilike.%${identifier}%`)
+    } else {
+      // If it's not a UUID, use ILIKE for partial matching
+      sackQuery = sackQuery.or(`sack_id.ilike.%${identifier}%,qr_code_url.ilike.%${identifier}%,customers.phone.ilike.%${identifier}%`)
+    }
+    
+    const { data: sacks, error: sackError } = await sackQuery
     
     if (sackError) throw sackError
 

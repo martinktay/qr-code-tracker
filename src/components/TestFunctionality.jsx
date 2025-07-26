@@ -60,11 +60,11 @@ const TestFunctionality = () => {
 
     // Test 4: Search Parcels
     try {
-      const searchResults = await db.searchParcel('test');
+      const searchResults = await db.searchParcel('BOX');
       testResults.push({
         name: 'Search Parcels',
         status: 'passed',
-        message: 'Search function working'
+        message: `Search function working - found ${(searchResults?.boxes?.length || 0) + (searchResults?.sacks?.length || 0)} results`
       });
     } catch (error) {
       testResults.push({
