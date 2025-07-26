@@ -24,6 +24,7 @@ const ScanAndLog = () => {
   const [location, setLocation] = useState(null)
   const [photo, setPhoto] = useState(null)
   const [photoPreview, setPhotoPreview] = useState(null)
+  const [capturingPhoto, setCapturingPhoto] = useState(false)
   const scannerRef = useRef(null)
   const fileInputRef = useRef(null)
   const videoRef = useRef(null)
@@ -108,17 +109,41 @@ const ScanAndLog = () => {
   }
 
   const handlePhotoCapture = () => {
-    if (videoRef.current) {
-      const canvas = document.createElement('canvas')
-      canvas.width = videoRef.current.videoWidth
-      canvas.height = videoRef.current.videoHeight
-      const ctx = canvas.getContext('2d')
-      ctx.drawImage(videoRef.current, 0, 0)
-      
-      canvas.toBlob((blob) => {
-        setPhoto(blob)
-        setPhotoPreview(URL.createObjectURL(blob))
-      }, 'image/jpeg', 0.8)
+    setCapturingPhoto(true)
+    
+    // Use the device camera to capture a photo
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      navigator.mediaDevices.getUserMedia({ video: true })
+        .then(stream => {
+          const video = document.createElement('video')
+          video.srcObject = stream
+          video.play()
+          
+          video.onloadedmetadata = () => {
+            const canvas = document.createElement('canvas')
+            canvas.width = video.videoWidth
+            canvas.height = video.videoHeight
+            const ctx = canvas.getContext('2d')
+            ctx.drawImage(video, 0, 0)
+            
+            canvas.toBlob((blob) => {
+              setPhoto(blob)
+              setPhotoPreview(URL.createObjectURL(blob))
+              setCapturingPhoto(false)
+              toast.success('Photo captured successfully!')
+              // Stop the stream
+              stream.getTracks().forEach(track => track.stop())
+            }, 'image/jpeg', 0.8)
+          }
+        })
+        .catch(error => {
+          console.error('Error accessing camera:', error)
+          toast.error('Unable to access camera for photo capture')
+          setCapturingPhoto(false)
+        })
+    } else {
+      toast.error('Camera not supported on this device')
+      setCapturingPhoto(false)
     }
   }
 
@@ -320,6 +345,16 @@ const ScanAndLog = () => {
           <div className="card">
             <h2 className="text-lg font-medium text-gray-900 mb-4">Photo Capture</h2>
             <div className="space-y-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-center mb-2">
+                  <Camera className="h-5 w-5 text-blue-600 mr-2" />
+                  <span className="text-sm font-medium text-blue-800">Photo Capture Options</span>
+                </div>
+                <p className="text-sm text-blue-700">
+                  Capture a photo using your device camera or upload an existing image
+                </p>
+              </div>
+              
               <div className="flex gap-2">
                 <button
                   onClick={() => fileInputRef.current?.click()}
@@ -330,13 +365,23 @@ const ScanAndLog = () => {
                 </button>
                 <button
                   onClick={handlePhotoCapture}
-                  className="flex-1 btn-secondary"
-                  disabled={!videoRef.current}
+                  disabled={capturingPhoto}
+                  className="flex-1 btn-primary disabled:opacity-50"
                 >
-                  <Camera className="h-4 w-4 mr-2" />
-                  Capture
+                  {capturingPhoto ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Capturing...
+                    </>
+                  ) : (
+                    <>
+                      <Camera className="h-4 w-4 mr-2" />
+                      Capture Photo
+                    </>
+                  )}
                 </button>
               </div>
+              
               <input
                 ref={fileInputRef}
                 type="file"
@@ -344,13 +389,27 @@ const ScanAndLog = () => {
                 onChange={handleFileUpload}
                 className="hidden"
               />
+              
               {photoPreview && (
                 <div className="text-center">
-                  <img
-                    src={photoPreview}
-                    alt="Preview"
-                    className="w-32 h-32 object-cover rounded-lg border border-gray-200"
-                  />
+                  <div className="relative inline-block">
+                    <img
+                      src={photoPreview}
+                      alt="Preview"
+                      className="w-32 h-32 object-cover rounded-lg border border-gray-200"
+                    />
+                    <button
+                      onClick={() => {
+                        setPhoto(null)
+                        setPhotoPreview(null)
+                      }}
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
+                      title="Remove photo"
+                    >
+                      ×
+                    </button>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">Photo captured successfully</p>
                 </div>
               )}
             </div>
