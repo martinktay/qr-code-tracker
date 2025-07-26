@@ -6,7 +6,7 @@ class ParcelLabelPDF {
   static async generateLabel(parcelData, parcelType) {
     try {
       // Generate QR code
-      const qrCodeDataURL = await QRCode.toDataURL(parcelData.qr_code_url || `https://smarttrack.com/track/${parcelType}/${parcelData[`${parcelType}_id`]}`)
+      const qrCodeDataURL = await QRCode.toDataURL(parcelData.qr_code_url || `https://smartexporters.com/track/${parcelType}/${parcelData[`${parcelType}_id`]}`)
       
       // Create temporary HTML element for the label
       const labelElement = document.createElement('div')
@@ -53,7 +53,7 @@ class ParcelLabelPDF {
             <div style="text-align: center; margin-top: 20px;">
               <p style="margin: 0; font-size: 10px; color: #6b7280;">
                 Scan QR code to track your package<br>
-                www.smarttrack.com
+                www.smartexporters.com
               </p>
             </div>
           </div>
@@ -124,7 +124,7 @@ class ParcelLabelPDF {
         const parcel = parcels[i]
         
         // Generate QR code for this parcel
-        const qrCodeDataURL = await QRCode.toDataURL(parcel.qr_code_url || `https://smarttrack.com/track/${parcelType}/${parcel[`${parcelType}_id`]}`)
+        const qrCodeDataURL = await QRCode.toDataURL(parcel.qr_code_url || `https://smartexporters.com/track/${parcelType}/${parcel[`${parcelType}_id`]}`)
         
         // Create label element
         const labelElement = document.createElement('div')
@@ -170,7 +170,7 @@ class ParcelLabelPDF {
               <div style="text-align: center; margin-top: 20px;">
                 <p style="margin: 0; font-size: 10px; color: #6b7280;">
                   Scan QR code to track your package<br>
-                  www.smarttrack.com
+                  www.smartexporters.com
                 </p>
               </div>
             </div>

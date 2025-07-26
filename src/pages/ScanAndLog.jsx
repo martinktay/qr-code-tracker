@@ -190,6 +190,7 @@ const ScanAndLog = () => {
       const scanRecord = {
         [parcelData.type === 'box' ? 'box_id' : 'sack_id']: parcelData[`${parcelData.type}_id`],
         scan_location: location ? `(${location.lat},${location.lng})` : null,
+        status: data.status, // Include the status in scan record
         status_message: data.statusMessage,
         photo_url: photoUrl,
         estimated_delivery: data.estimatedDelivery ? new Date(data.estimatedDelivery).toISOString() : null,
@@ -336,10 +337,10 @@ const ScanAndLog = () => {
               
               <button
                 onClick={startScanner}
-                className="w-full btn-primary"
+                className="w-full btn-primary flex items-center justify-center"
+                title="Open Mobile Scanner"
               >
-                <Scan className="h-5 w-5 mr-2" />
-                Open Mobile Scanner
+                <Scan className="h-6 w-6" />
               </button>
             </div>
           </div>
@@ -354,7 +355,7 @@ const ScanAndLog = () => {
                 </label>
                 <input
                   type="text"
-                  placeholder="https://smarttrack.com/track/box/..."
+                  placeholder="https://smartexporters.com/track/box/..."
                   className="input-field"
                   onChange={(e) => setScannedData(e.target.value)}
                 />
@@ -386,26 +387,21 @@ const ScanAndLog = () => {
               <div className="flex gap-2">
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="flex-1 btn-secondary"
+                  className="flex-1 btn-secondary flex items-center justify-center"
+                  title="Upload Photo"
                 >
-                  <Upload className="h-4 w-4 mr-2" />
-                  Upload Photo
+                  <Upload className="h-6 w-6" />
                 </button>
                 <button
                   onClick={handlePhotoCapture}
                   disabled={capturingPhoto}
-                  className="flex-1 btn-primary disabled:opacity-50"
+                  className="flex-1 btn-primary disabled:opacity-50 flex items-center justify-center"
+                  title="Capture Photo"
                 >
                   {capturingPhoto ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      Capturing...
-                    </>
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
                   ) : (
-                    <>
-                      <Camera className="h-4 w-4 mr-2" />
-                      Capture Photo
-                    </>
+                    <Camera className="h-6 w-6" />
                   )}
                 </button>
               </div>

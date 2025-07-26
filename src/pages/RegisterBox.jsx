@@ -65,7 +65,7 @@ const RegisterBox = () => {
 
       // Generate QR code
       const boxId = crypto.randomUUID()
-      const qrCodeUrl = `https://smarttrack.com/track/box/${boxId}`
+      const qrCodeUrl = `https://smartexporters.com/track/box/${boxId}`
       const qrCodeDataURL = await QRCode.toDataURL(qrCodeUrl)
 
       // Create box record

@@ -14,6 +14,8 @@ import TermsPage from './pages/TermsPage'
 import PrivacyPage from './pages/PrivacyPage'
 import MapTracker from './pages/MapTracker'
 import TestFunctionality from './components/TestFunctionality'
+import DebugAuth from './components/DebugAuth'
+import DatabaseCheck from './components/DatabaseCheck'
 import { Toaster } from 'react-hot-toast'
 
 const ProtectedRoute = ({ children, allowedRoles = [] }) => {
@@ -62,6 +64,10 @@ const App = () => {
         <Route path="/portal" element={<CustomerPortal />} />
         <Route path="/terms" element={<TermsPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
+        
+        {/* Public tracking routes for QR code scanning */}
+        <Route path="/track/box/:id" element={<ParcelTimeline />} />
+        <Route path="/track/sack/:id" element={<ParcelTimeline />} />
         
         <Route path="/" element={
           <ProtectedRoute>
@@ -134,6 +140,9 @@ const App = () => {
             </Layout>
           </ProtectedRoute>
         } />
+        
+        <Route path="/debug" element={<DebugAuth />} />
+        <Route path="/db-check" element={<DatabaseCheck />} />
       </Routes>
       <Toaster position="top-right" />
     </>

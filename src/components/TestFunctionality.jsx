@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
-import { CheckCircle, XCircle, AlertCircle, Play, Stop, RefreshCw } from 'lucide-react';
+import { CheckCircle, XCircle, AlertCircle, Play, Square, RefreshCw } from 'lucide-react';
 
 const TestFunctionality = () => {
   const [tests, setTests] = useState([]);
@@ -460,7 +460,7 @@ const TestFunctionality = () => {
           >
             {running ? (
               <>
-                <Stop className="w-4 h-4" />
+                <Square className="w-4 h-4" />
                 <span>Running Tests...</span>
               </>
             ) : (

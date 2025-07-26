@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { Building, Eye, EyeOff, Package, User } from 'lucide-react'
@@ -16,8 +16,17 @@ const Login = () => {
     phone: ''
   })
 
-  const { signIn, signUp } = useAuth()
+  const { signIn, signUp, forceLogout } = useAuth()
   const navigate = useNavigate()
+
+  // Force logout any existing session when login page loads
+  useEffect(() => {
+    const clearExistingSession = async () => {
+      console.log('Login page: Clearing any existing session...')
+      await forceLogout()
+    }
+    clearExistingSession()
+  }, [forceLogout])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -60,6 +69,14 @@ const Login = () => {
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
             {isLogin ? 'Sign in to SmartTrack' : 'Create your account'}
           </h2>
+          <div className="mt-2 text-center">
+            <button
+              onClick={forceLogout}
+              className="text-xs text-gray-500 hover:text-gray-700 underline"
+            >
+              Clear Session & Refresh
+            </button>
+          </div>
           <p className="mt-2 text-center text-sm text-gray-600">
             {isLogin ? (
               <>

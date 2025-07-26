@@ -46,11 +46,24 @@ const Dashboard = () => {
     try {
       setLoading(true)
       
+      console.log('Current user role:', userRole)
+      console.log('Current user:', user)
+      
+      // Force fetch real data regardless of role for debugging
+      await fetchRealData()
+      
+      // Also fetch role-specific data if needed
       if (userRole === 'admin') {
+        console.log('Fetching admin dashboard...')
         await fetchAdminDashboard()
-      } else if (userRole === 'warehouse_staff') {
+      } else if (userRole === 'warehouse' || userRole === 'warehouse_staff') {
+        console.log('Fetching warehouse dashboard...')
         await fetchWarehouseDashboard()
       } else if (userRole === 'customer') {
+        console.log('Fetching customer dashboard...')
+        await fetchCustomerDashboard()
+      } else {
+        console.log('Unknown role, defaulting to customer dashboard...')
         await fetchCustomerDashboard()
       }
     } catch (error) {
@@ -61,12 +74,73 @@ const Dashboard = () => {
     }
   }
 
+  // Force fetch real data from database
+  const fetchRealData = async () => {
+    try {
+      console.log('Fetching real database data...')
+      
+      // Fetch all data with detailed logging
+      const { data: boxes, error: boxesError } = await supabase
+        .from('boxes')
+        .select('*')
+      
+      console.log('Boxes fetched:', boxes?.length || 0, 'Error:', boxesError)
+      
+      const { data: sacks, error: sacksError } = await supabase
+        .from('sacks')
+        .select('*')
+      
+      console.log('Sacks fetched:', sacks?.length || 0, 'Error:', sacksError)
+      
+      const { data: customers, error: customersError } = await supabase
+        .from('customers')
+        .select('*')
+      
+      console.log('Customers fetched:', customers?.length || 0, 'Error:', customersError)
+      
+      const { data: users, error: usersError } = await supabase
+        .from('user_accounts')
+        .select('*')
+      
+      console.log('Users fetched:', users?.length || 0, 'Error:', usersError)
+      
+      const allParcels = [...(boxes || []), ...(sacks || [])]
+      const totalWeight = allParcels.reduce((sum, parcel) => sum + (parcel.weight_kg || 0), 0)
+      
+      const realStats = {
+        totalBoxes: boxes?.length || 0,
+        totalSacks: sacks?.length || 0,
+        inTransit: allParcels.filter(p => p.status === 'in_transit').length,
+        delivered: allParcels.filter(p => p.status === 'delivered').length,
+        pending: allParcels.filter(p => p.status === 'packed').length,
+        totalCustomers: customers?.length || 0,
+        totalUsers: users?.length || 0,
+        alerts: allParcels.filter(p => p.status === 'packed').length,
+        totalWeight: totalWeight
+      }
+      
+      console.log('Real stats calculated:', realStats)
+      console.log('All parcels:', allParcels)
+      
+      // Update stats with real data
+      setStats(realStats)
+      
+    } catch (error) {
+      console.error('Error fetching real data:', error)
+    }
+  }
+
   const fetchAdminDashboard = async () => {
     try {
+      console.log('Fetching admin dashboard data...')
+      
       // Admin sees all data and system statistics
       const { data: boxes, error: boxesError } = await supabase
         .from('boxes')
         .select('status, weight_kg, created_at')
+      
+      console.log('Boxes data:', boxes)
+      console.log('Boxes error:', boxesError)
       
       if (boxesError) {
         console.error('Error fetching boxes:', boxesError)
@@ -75,6 +149,9 @@ const Dashboard = () => {
       const { data: sacks, error: sacksError } = await supabase
         .from('sacks')
         .select('status, weight_kg, created_at')
+      
+      console.log('Sacks data:', sacks)
+      console.log('Sacks error:', sacksError)
       
       if (sacksError) {
         console.error('Error fetching sacks:', sacksError)
@@ -110,6 +187,9 @@ const Dashboard = () => {
         alerts: allParcels.filter(p => p.status === 'packed').length, // Pending deliveries as alerts
         totalWeight: totalWeight
       }
+      
+      console.log('Calculated stats:', stats)
+      console.log('All parcels:', allParcels)
       
       setStats(stats)
 
@@ -634,14 +714,25 @@ const Dashboard = () => {
 
   return (
     <div className="p-6">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-600 mt-2">
-          Welcome to SmartTrack Logistics Platform
-          {userRole === 'admin' && ' - Administrative View'}
-          {userRole === 'warehouse_staff' && ' - Operations View'}
-          {userRole === 'customer' && ' - Customer View'}
-        </p>
+      <div className="mb-8 flex justify-between items-start">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+          <p className="text-gray-600 mt-2">
+            Welcome to SmartTrack Logistics Platform
+            {userRole === 'admin' && ' - Administrative View'}
+            {userRole === 'warehouse_staff' && ' - Operations View'}
+            {userRole === 'customer' && ' - Customer View'}
+          </p>
+        </div>
+        <button
+          onClick={fetchRealData}
+          className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center"
+        >
+          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          Refresh Data
+        </button>
       </div>
 
       {/* Admin Dashboard with Tabs */}

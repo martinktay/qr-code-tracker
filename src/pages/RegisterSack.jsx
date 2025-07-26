@@ -65,7 +65,7 @@ const RegisterSack = () => {
 
       // Generate QR code
       const sackId = crypto.randomUUID()
-      const qrCodeUrl = `https://smarttrack.com/track/sack/${sackId}`
+      const qrCodeUrl = `https://smartexporters.com/track/sack/${sackId}`
       const qrCodeDataURL = await QRCode.toDataURL(qrCodeUrl)
 
       // Create sack record

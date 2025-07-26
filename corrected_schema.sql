@@ -198,6 +198,6 @@ VALUES (
 CREATE OR REPLACE FUNCTION generate_qr_code_url(parcel_id UUID, parcel_type TEXT)
 RETURNS TEXT AS $$
 BEGIN
-    RETURN 'https://smarttrack.com/track/' || parcel_type || '/' || parcel_id;
+    RETURN 'https://smartexporters.com/track/' || parcel_type || '/' || parcel_id;
 END;
 $$ LANGUAGE plpgsql; 

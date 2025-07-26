@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { db } from '../lib/supabase';
 import toast from 'react-hot-toast';
@@ -13,18 +13,24 @@ import {
   User, 
   MessageSquare,
   ArrowLeft,
-  Activity
+  Activity,
+  QrCode,
+  Smartphone
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const ParcelTimeline = () => {
   const { id } = useParams();
+  const location = useLocation();
   const { user, userRole } = useAuth();
   const [parcel, setParcel] = useState(null);
   const [scanHistory, setScanHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showChat, setShowChat] = useState(false);
   const [activeTab, setActiveTab] = useState('timeline'); // 'timeline' or 'trail'
+  
+  // Check if this is a public QR code access
+  const isPublicAccess = location.pathname.startsWith('/track/');
 
   useEffect(() => {
     fetchParcelData();
@@ -116,13 +122,23 @@ const ParcelTimeline = () => {
           <Package className="w-16 h-16 text-gray-400 mx-auto mb-4" />
           <h2 className="text-xl font-semibold text-gray-900 mb-2">Parcel Not Found</h2>
           <p className="text-gray-600 mb-4">The parcel you're looking for doesn't exist.</p>
-          <Link 
-            to="/dashboard" 
-            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Dashboard
-          </Link>
+          {isPublicAccess ? (
+            <Link 
+              to="/portal" 
+              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Customer Portal
+            </Link>
+          ) : (
+            <Link 
+              to="/dashboard" 
+              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Dashboard
+            </Link>
+          )}
         </div>
       </div>
     );
@@ -130,15 +146,37 @@ const ParcelTimeline = () => {
 
   return (
     <div className="max-w-4xl mx-auto p-6">
+      {/* Public QR Code Header */}
+      {isPublicAccess && (
+        <div className="mb-6 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4">
+          <div className="flex items-center space-x-3">
+            <div className="flex-shrink-0">
+              <QrCode className="h-6 w-6 text-blue-600" />
+            </div>
+            <div>
+              <h3 className="text-sm font-medium text-blue-900">QR Code Tracking</h3>
+              <p className="text-sm text-blue-800">
+                You scanned a QR code to track this parcel. For full access to your shipments, 
+                <Link to="/portal" className="text-blue-600 hover:text-blue-700 font-medium ml-1">
+                  visit the customer portal
+                </Link>
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="mb-6">
-        <Link 
-          to="/dashboard" 
-          className="inline-flex items-center text-blue-600 hover:text-blue-700 mb-4"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Dashboard
-        </Link>
+        {!isPublicAccess && (
+          <Link 
+            to="/dashboard" 
+            className="inline-flex items-center text-blue-600 hover:text-blue-700 mb-4"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Dashboard
+          </Link>
+        )}
         
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-4">
@@ -147,7 +185,7 @@ const ParcelTimeline = () => {
                 Parcel Details
               </h1>
               <p className="text-gray-600">
-                Tracking ID: {parcel.tracking_number || id}
+                Tracking ID: {parcel.box_id || parcel.sack_id || id}
               </p>
             </div>
             
@@ -156,10 +194,8 @@ const ParcelTimeline = () => {
                 {getStatusText(parcel.status)}
               </span>
               
-
-              
-              {/* Chat button for customers */}
-              {userRole === 'customer' && (
+              {/* Chat button for authenticated customers */}
+              {user && userRole === 'customer' && (
                 <button
                   onClick={() => setShowChat(!showChat)}
                   className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
@@ -167,6 +203,17 @@ const ParcelTimeline = () => {
                   <MessageSquare className="w-4 h-4 mr-2" />
                   {showChat ? 'Hide Chat' : 'Chat with Support'}
                 </button>
+              )}
+
+              {/* Login prompt for public users */}
+              {isPublicAccess && !user && (
+                <Link
+                  to="/portal"
+                  className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+                >
+                  <Smartphone className="w-4 h-4 mr-2" />
+                  Customer Portal
+                </Link>
               )}
             </div>
           </div>
@@ -178,7 +225,7 @@ const ParcelTimeline = () => {
               <div>
                 <p className="text-sm font-medium text-gray-900">Parcel Type</p>
                 <p className="text-sm text-gray-600">
-                  {parcel.parcel_type === 'box' ? 'Box' : 'Sack'}
+                  {parcel.box_id ? 'Box' : 'Sack'}
                 </p>
               </div>
             </div>
@@ -188,7 +235,7 @@ const ParcelTimeline = () => {
               <div>
                 <p className="text-sm font-medium text-gray-900">Customer</p>
                 <p className="text-sm text-gray-600">
-                  {parcel.customer_name || 'N/A'}
+                  {parcel.customers?.first_name} {parcel.customers?.last_name}
                 </p>
               </div>
             </div>
@@ -198,7 +245,7 @@ const ParcelTimeline = () => {
               <div>
                 <p className="text-sm font-medium text-gray-900">Destination</p>
                 <p className="text-sm text-gray-600">
-                  {parcel.destination_address || 'N/A'}
+                  {parcel.destination || 'N/A'}
                 </p>
               </div>
             </div>
@@ -213,25 +260,25 @@ const ParcelTimeline = () => {
               </div>
             </div>
 
-            {parcel.weight && (
+            {parcel.weight_kg && (
               <div className="flex items-start space-x-3">
                 <Package className="w-5 h-5 text-gray-500 mt-0.5" />
                 <div>
                   <p className="text-sm font-medium text-gray-900">Weight</p>
                   <p className="text-sm text-gray-600">
-                    {parcel.weight} kg
+                    {parcel.weight_kg} kg
                   </p>
                 </div>
               </div>
             )}
 
-            {parcel.dimensions && (
+            {parcel.content && (
               <div className="flex items-start space-x-3">
                 <Package className="w-5 h-5 text-gray-500 mt-0.5" />
                 <div>
-                  <p className="text-sm font-medium text-gray-900">Dimensions</p>
+                  <p className="text-sm font-medium text-gray-900">Content</p>
                   <p className="text-sm text-gray-600">
-                    {parcel.dimensions}
+                    {parcel.content}
                   </p>
                 </div>
               </div>
@@ -240,35 +287,37 @@ const ParcelTimeline = () => {
         </div>
       </div>
 
-      {/* Tab Navigation */}
-      <div className="mb-6">
-        <div className="border-b border-gray-200">
-          <nav className="-mb-px flex space-x-8">
-            <button
-              onClick={() => setActiveTab('timeline')}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'timeline'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              <Package className="w-4 h-4 inline mr-2" />
-              Delivery Timeline
-            </button>
-            <button
-              onClick={() => setActiveTab('trail')}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'trail'
-                  ? 'border-green-500 text-green-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              <Activity className="w-4 h-4 inline mr-2" />
-              Interaction Trail
-            </button>
-          </nav>
+      {/* Tab Navigation - Only show for authenticated users or public timeline */}
+      {user && (
+        <div className="mb-6">
+          <div className="border-b border-gray-200">
+            <nav className="-mb-px flex space-x-8">
+              <button
+                onClick={() => setActiveTab('timeline')}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'timeline'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                <Package className="w-4 h-4 inline mr-2" />
+                Delivery Timeline
+              </button>
+              <button
+                onClick={() => setActiveTab('trail')}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'trail'
+                    ? 'border-green-500 text-green-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                <Activity className="w-4 h-4 inline mr-2" />
+                Interaction Trail
+              </button>
+            </nav>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Tab Content */}
       {activeTab === 'timeline' && (
@@ -281,7 +330,7 @@ const ParcelTimeline = () => {
         </div>
       )}
 
-      {activeTab === 'trail' && (
+      {activeTab === 'trail' && user && (
         <div className="mb-6">
           <InteractionTrail 
             parcelId={id}
@@ -291,8 +340,8 @@ const ParcelTimeline = () => {
         </div>
       )}
 
-      {/* Chat Window */}
-      {showChat && userRole === 'customer' && (
+      {/* Chat Window - Only for authenticated customers */}
+      {showChat && user && userRole === 'customer' && (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200">
           <ChatWindow 
             parcelId={id}
@@ -305,7 +354,7 @@ const ParcelTimeline = () => {
       )}
 
       {/* Detailed Scan History (for staff) */}
-      {userRole !== 'customer' && scanHistory.length > 0 && (
+      {user && userRole !== 'customer' && scanHistory.length > 0 && (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
             Detailed Scan History
@@ -316,19 +365,19 @@ const ParcelTimeline = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-medium text-gray-900">
-                      {getStatusText(scan.status)}
+                      {getStatusText(scan.status || 'packed')}
                     </p>
                     <p className="text-sm text-gray-600">
                       {new Date(scan.scan_time).toLocaleString()}
                     </p>
-                    {scan.location && (
+                    {scan.scan_location && (
                       <p className="text-sm text-gray-600">
-                        Location: {scan.location}
+                        Location: {scan.scan_location}
                       </p>
                     )}
-                    {scan.comments && (
+                    {scan.comment && (
                       <p className="text-sm text-gray-600">
-                        Notes: {scan.comments}
+                        Notes: {scan.comment}
                       </p>
                     )}
                   </div>

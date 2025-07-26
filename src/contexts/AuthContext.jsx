@@ -30,6 +30,14 @@ export const AuthProvider = ({ children }) => {
       setLoading(false)
     })
 
+    // Fallback timeout to prevent infinite loading
+    const fallbackTimeout = setTimeout(() => {
+      console.warn('Auth loading timeout - forcing loading to false')
+      setLoading(false)
+    }, 15000)
+
+    return () => clearTimeout(fallbackTimeout)
+
     // Listen for changes on auth state (signed in, signed out, etc.)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       setUser(session?.user ?? null)
@@ -48,13 +56,55 @@ export const AuthProvider = ({ children }) => {
 
   const fetchUserRole = async (userId) => {
     try {
-      const role = await db.getUserRole(userId)
+      // Add timeout to prevent infinite loading
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Timeout')), 10000)
+      );
+      
+      const rolePromise = db.getUserRole(userId);
+      const role = await Promise.race([rolePromise, timeoutPromise]);
+      
       setUserRole(role)
     } catch (error) {
       console.error('Error fetching user role:', error)
       setUserRole('customer') // Default to customer role
     } finally {
       setLoading(false)
+    }
+  }
+
+  // Simple authentication for testing with user_accounts table
+  const simpleSignIn = async (email, password) => {
+    try {
+      const { data, error } = await supabase
+        .from('user_accounts')
+        .select('*')
+        .eq('email', email)
+        .eq('hashed_password', password)
+        .single()
+      
+      if (error || !data) {
+        throw new Error('Invalid email or password')
+      }
+
+      // Create a mock user object for the session
+      const mockUser = {
+        id: data.user_id,
+        email: data.email,
+        user_metadata: {
+          name: data.username,
+          role: data.role
+        }
+      }
+
+      setUser(mockUser)
+      setUserRole(data.role)
+      setLoading(false)
+
+      return { user: mockUser }
+    } catch (error) {
+      console.error('Simple sign in error:', error)
+      throw error
     }
   }
 
@@ -84,18 +134,53 @@ export const AuthProvider = ({ children }) => {
   }
 
   const signIn = async (email, password) => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
-    
-    if (error) throw error
-    return data
+    // Try Supabase Auth first, then fall back to simple auth for testing
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+      
+      if (error) {
+        // If Supabase Auth fails, try simple auth with user_accounts table
+        console.log('Supabase Auth failed, trying simple auth...')
+        return await simpleSignIn(email, password)
+      }
+      
+      return data
+    } catch (error) {
+      // If Supabase Auth throws an error, try simple auth
+      console.log('Supabase Auth error, trying simple auth...')
+      return await simpleSignIn(email, password)
+    }
   }
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut()
-    if (error) throw error
+    setUser(null)
+    setUserRole(null)
+    setLoading(false)
+    // Try to sign out from Supabase Auth as well
+    try {
+      await supabase.auth.signOut()
+    } catch (error) {
+      console.error('Supabase sign out error:', error)
+    }
+  }
+
+  const forceLogout = async () => {
+    console.log('Force logout called')
+    setUser(null)
+    setUserRole(null)
+    setLoading(false)
+    // Clear any stored session data
+    localStorage.removeItem('supabase.auth.token')
+    sessionStorage.clear()
+    // Try to sign out from Supabase Auth
+    try {
+      await supabase.auth.signOut()
+    } catch (error) {
+      console.error('Supabase sign out error:', error)
+    }
   }
 
   const resetPassword = async (email) => {
@@ -117,6 +202,7 @@ export const AuthProvider = ({ children }) => {
     signUp,
     signIn,
     signOut,
+    forceLogout,
     resetPassword,
     updatePassword
   }
