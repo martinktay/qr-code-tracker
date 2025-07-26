@@ -17,7 +17,19 @@ import {
   Users,
   AlertCircle,
   TrendingUp,
-  Globe
+  Globe,
+  Database,
+  Weight,
+  Activity,
+  Shield,
+  Bell,
+  FileText,
+  QrCode,
+  Building2,
+  UserCheck,
+  PackageCheck,
+  PackageX,
+  PackageSearch
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 
@@ -453,95 +465,118 @@ const Dashboard = () => {
   const renderAdminDashboard = () => (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">System Overview</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div className="bg-white p-4 rounded-lg shadow">
+        <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+          <Database className="h-6 w-6 text-blue-600 mr-2" />
+          System Overview
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-xl shadow-sm border border-blue-200">
             <div className="flex items-center">
-              <Users className="h-8 w-8 text-blue-600" />
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500">Total Customers</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.totalCustomers}</p>
+              <div className="p-3 bg-blue-500 rounded-lg">
+                <Users className="h-8 w-8 text-white" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-blue-600">Total Customers</p>
+                <p className="text-3xl font-bold text-blue-900">{stats.totalCustomers}</p>
               </div>
             </div>
           </div>
-          <div className="bg-white p-4 rounded-lg shadow">
+          <div className="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-xl shadow-sm border border-green-200">
             <div className="flex items-center">
-              <BarChart3 className="h-8 w-8 text-green-600" />
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500">Total Users</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.totalUsers}</p>
+              <div className="p-3 bg-green-500 rounded-lg">
+                <UserCheck className="h-8 w-8 text-white" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-green-600">Total Users</p>
+                <p className="text-3xl font-bold text-green-900">{stats.totalUsers}</p>
               </div>
             </div>
           </div>
-          <div className="bg-white p-4 rounded-lg shadow">
+          <div className="bg-gradient-to-br from-red-50 to-red-100 p-6 rounded-xl shadow-sm border border-red-200">
             <div className="flex items-center">
-              <AlertCircle className="h-8 w-8 text-red-600" />
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500">Pending Alerts</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.alerts}</p>
+              <div className="p-3 bg-red-500 rounded-lg">
+                <Bell className="h-8 w-8 text-white" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-red-600">Pending Alerts</p>
+                <p className="text-3xl font-bold text-red-900">{stats.alerts}</p>
               </div>
             </div>
           </div>
-          <div className="bg-white p-4 rounded-lg shadow">
+          <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 p-6 rounded-xl shadow-sm border border-indigo-200">
             <div className="flex items-center">
-              <Package className="h-8 w-8 text-blue-600" />
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500">Total Boxes</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.totalBoxes}</p>
+              <div className="p-3 bg-indigo-500 rounded-lg">
+                <Package className="h-8 w-8 text-white" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-indigo-600">Total Boxes</p>
+                <p className="text-3xl font-bold text-indigo-900">{stats.totalBoxes}</p>
               </div>
             </div>
           </div>
-          <div className="bg-white p-4 rounded-lg shadow">
+          <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 p-6 rounded-xl shadow-sm border border-emerald-200">
             <div className="flex items-center">
-              <Package2 className="h-8 w-8 text-green-600" />
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500">Total Sacks</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.totalSacks}</p>
+              <div className="p-3 bg-emerald-500 rounded-lg">
+                <Package2 className="h-8 w-8 text-white" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-emerald-600">Total Sacks</p>
+                <p className="text-3xl font-bold text-emerald-900">{stats.totalSacks}</p>
               </div>
             </div>
           </div>
-          <div className="bg-white p-4 rounded-lg shadow">
+          <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-xl shadow-sm border border-purple-200">
             <div className="flex items-center">
-              <TrendingUp className="h-8 w-8 text-purple-600" />
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500">Total Parcels</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.totalBoxes + stats.totalSacks}</p>
+              <div className="p-3 bg-purple-500 rounded-lg">
+                <PackageSearch className="h-8 w-8 text-white" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-purple-600">Total Parcels</p>
+                <p className="text-3xl font-bold text-purple-900">{stats.totalBoxes + stats.totalSacks}</p>
               </div>
             </div>
           </div>
-          <div className="bg-white p-4 rounded-lg shadow">
+          <div className="bg-gradient-to-br from-amber-50 to-amber-100 p-6 rounded-xl shadow-sm border border-amber-200">
             <div className="flex items-center">
-              <Truck className="h-8 w-8 text-yellow-600" />
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500">In Transit</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.inTransit}</p>
+              <div className="p-3 bg-amber-500 rounded-lg">
+                <Truck className="h-8 w-8 text-white" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-amber-600">In Transit</p>
+                <p className="text-3xl font-bold text-amber-900">{stats.inTransit}</p>
               </div>
             </div>
           </div>
-          <div className="bg-white p-4 rounded-lg shadow">
+          <div className="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-xl shadow-sm border border-green-200">
             <div className="flex items-center">
-              <CheckCircle className="h-8 w-8 text-green-600" />
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500">Delivered</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.delivered}</p>
+              <div className="p-3 bg-green-500 rounded-lg">
+                <PackageCheck className="h-8 w-8 text-white" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-green-600">Delivered</p>
+                <p className="text-3xl font-bold text-green-900">{stats.delivered}</p>
               </div>
             </div>
           </div>
-          <div className="bg-white p-4 rounded-lg shadow">
+          <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-6 rounded-xl shadow-sm border border-orange-200">
             <div className="flex items-center">
-              <Clock className="h-8 w-8 text-orange-600" />
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500">Pending</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.pending}</p>
+              <div className="p-3 bg-orange-500 rounded-lg">
+                <Clock className="h-8 w-8 text-white" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-orange-600">Pending</p>
+                <p className="text-3xl font-bold text-orange-900">{stats.pending}</p>
               </div>
             </div>
           </div>
-          <div className="bg-white p-4 rounded-lg shadow">
+          <div className="bg-gradient-to-br from-slate-50 to-slate-100 p-6 rounded-xl shadow-sm border border-slate-200">
             <div className="flex items-center">
-              <TrendingUp className="h-8 w-8 text-indigo-600" />
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500">Total Weight</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.totalWeight.toFixed(1)} kg</p>
+              <div className="p-3 bg-slate-500 rounded-lg">
+                <Weight className="h-8 w-8 text-white" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-slate-600">Total Weight</p>
+                <p className="text-3xl font-bold text-slate-900">{stats.totalWeight.toFixed(1)} kg</p>
               </div>
             </div>
           </div>
@@ -553,68 +588,88 @@ const Dashboard = () => {
   const renderWarehouseDashboard = () => (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Operations Overview</h2>
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+        <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+          <Activity className="h-6 w-6 text-blue-600 mr-2" />
+          Operations Overview
+        </h2>
+        <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-6 mb-6">
           <div className="flex items-center">
-            <AlertCircle className="h-5 w-5 text-yellow-600 mr-2" />
-            <p className="text-sm text-yellow-800">
-              You have <strong>{stats.alerts}</strong> parcels that need attention
-            </p>
+            <div className="p-3 bg-amber-500 rounded-lg">
+              <Bell className="h-6 w-6 text-white" />
+            </div>
+            <div className="ml-4">
+              <p className="text-lg font-semibold text-amber-800">
+                You have <span className="text-2xl font-bold text-amber-900">{stats.alerts}</span> parcels that need attention
+              </p>
+              <p className="text-sm text-amber-700 mt-1">These parcels require immediate processing or status updates</p>
+            </div>
           </div>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div className="bg-white p-4 rounded-lg shadow">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-xl shadow-sm border border-blue-200">
             <div className="flex items-center">
-              <Package className="h-8 w-8 text-blue-600" />
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500">Total Boxes</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.totalBoxes}</p>
+              <div className="p-3 bg-blue-500 rounded-lg">
+                <Package className="h-8 w-8 text-white" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-blue-600">Total Boxes</p>
+                <p className="text-3xl font-bold text-blue-900">{stats.totalBoxes}</p>
               </div>
             </div>
           </div>
-          <div className="bg-white p-4 rounded-lg shadow">
+          <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 p-6 rounded-xl shadow-sm border border-emerald-200">
             <div className="flex items-center">
-              <Package2 className="h-8 w-8 text-green-600" />
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500">Total Sacks</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.totalSacks}</p>
+              <div className="p-3 bg-emerald-500 rounded-lg">
+                <Package2 className="h-8 w-8 text-white" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-emerald-600">Total Sacks</p>
+                <p className="text-3xl font-bold text-emerald-900">{stats.totalSacks}</p>
               </div>
             </div>
           </div>
-          <div className="bg-white p-4 rounded-lg shadow">
+          <div className="bg-gradient-to-br from-amber-50 to-amber-100 p-6 rounded-xl shadow-sm border border-amber-200">
             <div className="flex items-center">
-              <Truck className="h-8 w-8 text-yellow-600" />
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500">In Transit</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.inTransit}</p>
+              <div className="p-3 bg-amber-500 rounded-lg">
+                <Truck className="h-8 w-8 text-white" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-amber-600">In Transit</p>
+                <p className="text-3xl font-bold text-amber-900">{stats.inTransit}</p>
               </div>
             </div>
           </div>
-          <div className="bg-white p-4 rounded-lg shadow">
+          <div className="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-xl shadow-sm border border-green-200">
             <div className="flex items-center">
-              <CheckCircle className="h-8 w-8 text-green-600" />
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500">Delivered</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.delivered}</p>
+              <div className="p-3 bg-green-500 rounded-lg">
+                <PackageCheck className="h-8 w-8 text-white" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-green-600">Delivered</p>
+                <p className="text-3xl font-bold text-green-900">{stats.delivered}</p>
               </div>
             </div>
           </div>
-          <div className="bg-white p-4 rounded-lg shadow">
+          <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-6 rounded-xl shadow-sm border border-orange-200">
             <div className="flex items-center">
-              <Clock className="h-8 w-8 text-orange-600" />
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500">Pending</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.pending}</p>
+              <div className="p-3 bg-orange-500 rounded-lg">
+                <Clock className="h-8 w-8 text-white" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-orange-600">Pending</p>
+                <p className="text-3xl font-bold text-orange-900">{stats.pending}</p>
               </div>
             </div>
           </div>
-          <div className="bg-white p-4 rounded-lg shadow">
+          <div className="bg-gradient-to-br from-red-50 to-red-100 p-6 rounded-xl shadow-sm border border-red-200">
             <div className="flex items-center">
-              <AlertCircle className="h-8 w-8 text-red-600" />
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500">Need Attention</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.alerts}</p>
+              <div className="p-3 bg-red-500 rounded-lg">
+                <PackageX className="h-8 w-8 text-white" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-red-600">Need Attention</p>
+                <p className="text-3xl font-bold text-red-900">{stats.alerts}</p>
               </div>
             </div>
           </div>
@@ -809,67 +864,81 @@ const Dashboard = () => {
       {userRole === 'customer' && renderCustomerDashboard()}
 
       {/* Track Package Section */}
-      <div className="bg-white rounded-lg shadow p-6 mb-8">
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl shadow-sm border border-blue-200 p-6 mb-8">
         <div className="flex items-center justify-between">
-          <div className="flex items-center">
-            <Search className="h-6 w-6 text-gray-400 mr-3" />
+          <div className="flex items-center flex-1">
+            <div className="p-3 bg-blue-500 rounded-lg mr-4">
+              <Search className="h-6 w-6 text-white" />
+            </div>
             <input
               type="text"
-              placeholder="Search for a package"
-              className="border-0 outline-none text-lg placeholder-gray-400 flex-1"
+              placeholder="Search for a package by ID, customer, or destination..."
+              className="border-0 outline-none text-lg placeholder-gray-500 flex-1 bg-transparent"
             />
           </div>
-          <button className="bg-primary-600 text-white p-2 rounded-lg hover:bg-primary-700">
+          <button className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white p-3 rounded-xl hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 shadow-md">
             <Plus className="h-5 w-5" />
           </button>
         </div>
       </div>
 
       {/* Recent Parcels */}
-      <div className="bg-white rounded-lg shadow">
-        <div className="px-6 py-4 border-b border-gray-200">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+        <div className="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-medium text-gray-900">
-              {userRole === 'admin' && 'Recent Parcels'}
-              {userRole === 'warehouse_staff' && 'Parcels Needing Attention'}
-              {userRole === 'customer' && 'My Recent Shipments'}
-            </h3>
-            <Link to="/map" className="text-primary-600 hover:text-primary-700 text-sm font-medium">
+            <div className="flex items-center">
+              <FileText className="h-5 w-5 text-gray-600 mr-2" />
+              <h3 className="text-lg font-semibold text-gray-900">
+                {userRole === 'admin' && 'Recent Parcels'}
+                {userRole === 'warehouse_staff' && 'Parcels Needing Attention'}
+                {userRole === 'customer' && 'My Recent Shipments'}
+              </h3>
+            </div>
+            <Link to="/map" className="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center">
               View all
+              <MapPin className="h-4 w-4 ml-1" />
             </Link>
           </div>
         </div>
         
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+            <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">TYPE</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">CUSTOMER</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">DESTINATION</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">STATUS</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">DATE</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">TYPE</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">CUSTOMER</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">DESTINATION</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">STATUS</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">DATE</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white divide-y divide-gray-100">
               {recentParcels.map((parcel) => (
-                <tr key={parcel.box_id || parcel.sack_id} className="hover:bg-gray-50">
+                <tr key={parcel.box_id || parcel.sack_id} className="hover:bg-blue-50 transition-colors duration-150">
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                      {parcel.type === 'box' ? 'Box' : 'Sack'}
+                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                      parcel.type === 'box' 
+                        ? 'bg-blue-100 text-blue-800' 
+                        : 'bg-emerald-100 text-emerald-800'
+                    }`}>
+                      {parcel.type === 'box' ? '📦 Box' : '📦 Sack'}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">
+                    <div className="text-sm font-semibold text-gray-900">
                       {parcel.customers?.first_name} {parcel.customers?.last_name}
                     </div>
-                    <div className="text-sm text-gray-500">{parcel.customers?.phone}</div>
+                    <div className="text-sm text-gray-500 flex items-center">
+                      <User className="h-3 w-3 mr-1" />
+                      {parcel.customers?.phone}
+                    </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 flex items-center">
+                    <MapPin className="h-4 w-4 text-gray-400 mr-2" />
                     {parcel.destination}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(parcel.status)}`}>
+                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(parcel.status)}`}>
                       {getStatusText(parcel.status)}
                     </span>
                   </td>
@@ -883,8 +952,12 @@ const Dashboard = () => {
         </div>
         
         {recentParcels.length === 0 && (
-          <div className="text-center py-8">
-            <p className="text-gray-500">No parcels found</p>
+          <div className="text-center py-12">
+            <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+              <Package className="h-8 w-8 text-gray-400" />
+            </div>
+            <p className="text-gray-500 text-lg font-medium">No parcels found</p>
+            <p className="text-gray-400 text-sm mt-1">Start by registering a new parcel or check your filters</p>
           </div>
         )}
       </div>

@@ -2,21 +2,29 @@ import React, { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { 
-  Home, 
+  LayoutDashboard, 
   Package, 
   Package2, 
-  Scan, 
-  Map, 
+  QrCode, 
+  MapPin, 
   Settings, 
   LogOut, 
   Menu, 
   X,
   User,
-  Building,
+  Building2,
   Users,
   BarChart3,
   MessageSquare,
-  Search
+  Search,
+  Plus,
+  Truck,
+  ClipboardList,
+  Shield,
+  Globe,
+  Bell,
+  FileText,
+  Database
 } from 'lucide-react'
 
 const Layout = ({ children }) => {
@@ -38,43 +46,43 @@ const Layout = ({ children }) => {
     { 
       name: 'Dashboard', 
       href: '/dashboard', 
-      icon: Home, 
-      allowedRoles: ['admin', 'warehouse', 'customer'],
+      icon: LayoutDashboard, 
+      allowedRoles: ['admin', 'warehouse_staff', 'customer'],
       description: 'Overview and statistics'
     },
     { 
       name: 'Register Box', 
       href: '/register-box', 
       icon: Package, 
-      allowedRoles: ['admin', 'warehouse'],
-      description: 'Add new box parcels'
+      allowedRoles: ['admin', 'warehouse_staff'],
+      description: 'Create new box parcels'
     },
     { 
       name: 'Register Sack', 
       href: '/register-sack', 
       icon: Package2, 
-      allowedRoles: ['admin', 'warehouse'],
-      description: 'Add new sack parcels'
+      allowedRoles: ['admin', 'warehouse_staff'],
+      description: 'Create new sack parcels'
     },
     { 
       name: 'Scan & Log', 
       href: '/scan-and-log', 
-      icon: Scan, 
-      allowedRoles: ['admin', 'warehouse'],
-      description: 'Update parcel status'
+      icon: QrCode, 
+      allowedRoles: ['admin', 'warehouse_staff'],
+      description: 'Scan QR codes & update status'
     },
     { 
       name: 'Map Tracker', 
       href: '/map-tracker', 
-      icon: Map, 
-      allowedRoles: ['admin', 'warehouse'],
-      description: 'View parcels on map'
+      icon: MapPin, 
+      allowedRoles: ['admin', 'warehouse_staff'],
+      description: 'Track parcels on map'
     },
     { 
       name: 'Track Package', 
       href: '/portal', 
       icon: Search, 
-      allowedRoles: ['admin', 'warehouse', 'customer'],
+      allowedRoles: ['admin', 'warehouse_staff', 'customer'],
       description: 'Search and track parcels'
     },
     { 
@@ -152,7 +160,7 @@ const Layout = ({ children }) => {
         <div className="fixed inset-y-0 left-0 flex w-64 flex-col bg-white">
           <div className="flex h-16 items-center justify-between px-4">
             <div className="flex items-center">
-              <Building className="h-8 w-8 text-primary-600 mr-2" />
+              <Building2 className="h-8 w-8 text-primary-600 mr-2" />
               <h1 className="text-xl font-bold text-primary-600">SmartTrack</h1>
             </div>
             <button
@@ -215,45 +223,47 @@ const Layout = ({ children }) => {
 
       {/* Desktop sidebar */}
       <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col">
-        <div className="flex flex-col flex-grow bg-white border-r border-gray-200">
-          <div className="flex h-16 items-center px-4">
-            <Building className="h-8 w-8 text-primary-600 mr-2" />
-            <h1 className="text-xl font-bold text-primary-600">SmartTrack</h1>
+        <div className="flex flex-col flex-grow bg-gradient-to-b from-white to-gray-50 border-r border-gray-200">
+          <div className="flex h-16 items-center px-4 bg-gradient-to-r from-blue-600 to-indigo-600">
+            <Building2 className="h-8 w-8 text-white mr-2" />
+            <h1 className="text-xl font-bold text-white">SmartTrack</h1>
           </div>
-          <nav className="flex-1 space-y-1 px-2 py-4">
+          <nav className="flex-1 space-y-2 px-3 py-6">
             {filteredNavigation.map((item) => {
               const isActive = location.pathname === item.href
               return (
                 <Link
                   key={item.name}
                   to={item.href}
-                  className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md ${
+                  className={`group flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200 ${
                     isActive
-                      ? 'bg-primary-100 text-primary-900'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                      ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-md'
+                      : 'text-gray-600 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 hover:text-blue-700'
                   }`}
                   title={item.description}
                 >
                   <item.icon
                     className={`mr-3 h-5 w-5 ${
-                      isActive ? 'text-primary-500' : 'text-gray-400 group-hover:text-gray-500'
+                      isActive ? 'text-white' : 'text-gray-400 group-hover:text-blue-500'
                     }`}
                   />
                   <div className="flex-1">
-                    <div>{item.name}</div>
-                    <div className="text-xs text-gray-400">{item.description}</div>
+                    <div className="font-semibold">{item.name}</div>
+                    <div className="text-xs opacity-75">{item.description}</div>
                   </div>
                 </Link>
               )
             })}
           </nav>
-          <div className="border-t border-gray-200 p-4">
-            <div className="flex items-center">
+          <div className="border-t border-gray-200 p-4 bg-white">
+            <div className="flex items-center p-3 bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl">
               <div className="flex-shrink-0">
-                <User className="h-8 w-8 text-gray-400" />
+                <div className="h-10 w-10 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center">
+                  <User className="h-5 w-5 text-white" />
+                </div>
               </div>
               <div className="ml-3 flex-1">
-                <p className="text-sm font-medium text-gray-700">{user?.email}</p>
+                <p className="text-sm font-semibold text-gray-900">{user?.email}</p>
                 <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getRoleColor(userRole)}`}>
                   {getRoleDisplayName(userRole)}
                 </span>
@@ -261,9 +271,9 @@ const Layout = ({ children }) => {
             </div>
             <button
               onClick={handleSignOut}
-              className="mt-3 flex w-full items-center px-2 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-md"
+              className="mt-3 flex w-full items-center px-3 py-2 text-sm font-medium text-gray-600 hover:bg-red-50 hover:text-red-700 rounded-xl transition-colors duration-200"
             >
-              <LogOut className="mr-3 h-5 w-5 text-gray-400" />
+              <LogOut className="mr-3 h-5 w-5" />
               Sign out
             </button>
           </div>
@@ -273,10 +283,10 @@ const Layout = ({ children }) => {
       {/* Main content */}
       <div className="lg:pl-64">
         {/* Top bar */}
-        <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-200 bg-white px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
+        <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-200 bg-gradient-to-r from-white to-gray-50 px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
           <button
             type="button"
-            className="-m-2.5 p-2.5 text-gray-700 lg:hidden"
+            className="-m-2.5 p-2.5 text-gray-700 lg:hidden hover:bg-gray-100 rounded-lg transition-colors duration-200"
             onClick={() => setSidebarOpen(true)}
           >
             <Menu className="h-6 w-6" />
@@ -284,7 +294,7 @@ const Layout = ({ children }) => {
           <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
             <div className="flex flex-1">
               <div className="flex items-center">
-                <h2 className="text-lg font-semibold text-gray-900">
+                <h2 className="text-xl font-bold text-gray-900">
                   {filteredNavigation.find(item => item.href === location.pathname)?.name || 'SmartTrack'}
                 </h2>
               </div>
@@ -293,8 +303,8 @@ const Layout = ({ children }) => {
               <div className="hidden lg:block lg:h-6 lg:w-px lg:bg-gray-200" />
               <div className="flex items-center gap-x-4">
                 <div className="text-right">
-                  <p className="text-sm font-medium text-gray-900">{user?.email}</p>
-                  <p className={`text-xs ${getRoleColor(userRole)}`}>
+                  <p className="text-sm font-semibold text-gray-900">{user?.email}</p>
+                  <p className={`text-xs font-medium ${getRoleColor(userRole)}`}>
                     {getRoleDisplayName(userRole)}
                   </p>
                 </div>
