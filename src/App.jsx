@@ -86,7 +86,7 @@ const App = () => {
         } />
         
         <Route path="/register-box" element={
-          <ProtectedRoute allowedRoles={['admin', 'warehouse']}>
+          <ProtectedRoute allowedRoles={['admin', 'warehouse_staff']}>
             <Layout>
               <RegisterBox />
             </Layout>
@@ -94,7 +94,7 @@ const App = () => {
         } />
         
         <Route path="/register-sack" element={
-          <ProtectedRoute allowedRoles={['admin', 'warehouse']}>
+          <ProtectedRoute allowedRoles={['admin', 'warehouse_staff']}>
             <Layout>
               <RegisterSack />
             </Layout>
@@ -102,7 +102,7 @@ const App = () => {
         } />
         
         <Route path="/scan-and-log" element={
-          <ProtectedRoute allowedRoles={['admin', 'warehouse']}>
+          <ProtectedRoute allowedRoles={['admin', 'warehouse_staff']}>
             <Layout>
               <ScanAndLog />
             </Layout>
