@@ -769,6 +769,25 @@ const Dashboard = () => {
 
   return (
     <div className="p-6">
+      {/* Debug Information */}
+      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+        <h3 className="text-lg font-semibold text-yellow-800 mb-2">Debug Information</h3>
+        <div className="grid grid-cols-2 gap-4 text-sm">
+          <div>
+            <strong>User Role:</strong> {userRole || 'undefined'}
+          </div>
+          <div>
+            <strong>User ID:</strong> {user?.id || 'undefined'}
+          </div>
+          <div>
+            <strong>Loading:</strong> {loading ? 'true' : 'false'}
+          </div>
+          <div>
+            <strong>Stats Total Boxes:</strong> {stats.totalBoxes}
+          </div>
+        </div>
+      </div>
+
       <div className="mb-8 flex justify-between items-start">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
@@ -859,6 +878,14 @@ const Dashboard = () => {
           {/* Tab Content for Warehouse Staff */}
           {activeTab === 'overview' && renderWarehouseDashboard()}
           {activeTab === 'warehouse' && <WarehouseStaffAnalytics />}
+        </div>
+      )}
+      
+      {/* Fallback for unknown roles or debugging */}
+      {!userRole && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+          <h3 className="text-lg font-semibold text-red-800 mb-2">No User Role Detected</h3>
+          <p className="text-red-700">Please check your authentication status. Current user: {JSON.stringify(user)}</p>
         </div>
       )}
       {userRole === 'customer' && renderCustomerDashboard()}
