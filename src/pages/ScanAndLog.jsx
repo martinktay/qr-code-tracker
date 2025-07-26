@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { supabase, db } from '../lib/supabase'
+import QRScanner from '../components/QRScanner'
 import { 
   Scan, 
   Camera, 
@@ -9,13 +10,14 @@ import {
   Package2, 
   CheckCircle,
   AlertCircle,
-  Upload
+  Upload,
+  Smartphone
 } from 'lucide-react'
 import toast from 'react-hot-toast'
-import { Html5QrcodeScanner } from 'html5-qrcode'
 
 const ScanAndLog = () => {
   const [scanning, setScanning] = useState(false)
+  const [showQRScanner, setShowQRScanner] = useState(false)
   const [scannedData, setScannedData] = useState(null)
   const [parcelData, setParcelData] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -55,37 +57,16 @@ const ScanAndLog = () => {
   }, [])
 
   const startScanner = () => {
-    setScanning(true)
-    setScannedData(null)
-    setParcelData(null)
-
-    const scanner = new Html5QrcodeScanner(
-      "qr-reader",
-      { 
-        fps: 10, 
-        qrbox: { width: 250, height: 250 },
-        aspectRatio: 1.0
-      },
-      false
-    )
-
-    scanner.render((decodedText) => {
-      handleQRCodeScanned(decodedText)
-      scanner.clear()
-      setScanning(false)
-    }, (error) => {
-      // Handle scan error
-    })
-
-    scannerRef.current = scanner
+    setShowQRScanner(true)
   }
 
   const stopScanner = () => {
-    if (scannerRef.current) {
-      scannerRef.current.clear()
-      scannerRef.current = null
-    }
-    setScanning(false)
+    setShowQRScanner(false)
+  }
+
+  const handleQRScan = (qrCodeData) => {
+    setShowQRScanner(false)
+    handleQRCodeScanned(qrCodeData)
   }
 
   const handleQRCodeScanned = async (qrCodeData) => {
@@ -261,35 +242,53 @@ const ScanAndLog = () => {
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Scan & Log</h1>
         <p className="mt-1 text-sm text-gray-500">
-          Scan QR codes and update parcel status with location and photos
+          Use your mobile phone to scan QR codes and update parcel status with location and photos
         </p>
+      </div>
+
+      {/* Mobile Instructions */}
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4">
+        <div className="flex items-start space-x-3">
+          <div className="flex-shrink-0">
+            <Smartphone className="h-6 w-6 text-blue-600" />
+          </div>
+          <div>
+            <h3 className="text-sm font-medium text-blue-900">Mobile Scanning Instructions</h3>
+            <ul className="mt-2 text-sm text-blue-800 space-y-1">
+              <li>• Open the mobile scanner using the button below</li>
+              <li>• Point your phone's camera at the QR code on the parcel</li>
+              <li>• The scanner will automatically detect and read the QR code</li>
+              <li>• You can also manually enter tracking numbers if needed</li>
+            </ul>
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Scanner Section */}
         <div className="space-y-6">
           <div className="card">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">QR Code Scanner</h2>
+            <h2 className="text-lg font-medium text-gray-900 mb-4">Mobile QR Scanner</h2>
             
-            {!scanning ? (
+            <div className="space-y-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-center mb-2">
+                  <Scan className="h-5 w-5 text-blue-600 mr-2" />
+                  <span className="text-sm font-medium text-blue-800">Mobile-Optimized Scanner</span>
+                </div>
+                <p className="text-sm text-blue-700">
+                  Use your phone's camera to scan QR codes on parcels. The scanner is optimized for mobile devices and will automatically detect QR codes.
+                </p>
+              </div>
+              
               <button
                 onClick={startScanner}
                 className="w-full btn-primary"
               >
                 <Scan className="h-5 w-5 mr-2" />
-                Start Scanner
+                Open Mobile Scanner
               </button>
-            ) : (
-              <div className="space-y-4">
-                <div id="qr-reader" className="w-full"></div>
-                <button
-                  onClick={stopScanner}
-                  className="w-full btn-secondary"
-                >
-                  Stop Scanner
-                </button>
-              </div>
-            )}
+            </div>
           </div>
 
           {/* Manual Entry */}
@@ -526,6 +525,13 @@ const ScanAndLog = () => {
           )}
         </div>
       </div>
+
+      {/* QR Scanner Modal */}
+      <QRScanner
+        isOpen={showQRScanner}
+        onClose={() => setShowQRScanner(false)}
+        onScan={handleQRScan}
+      />
     </div>
   )
 }
