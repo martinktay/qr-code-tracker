@@ -142,16 +142,21 @@ const ChatWindow = ({ parcelId, parcelType, recipientId, recipientPhone, recipie
         fileUrl = await uploadFile(selectedFile)
       }
 
+      // Determine if this is a customer message or user-to-user message
+      const isCustomerMessage = !recipientId || recipientId === 'customer'
+      
       const messageData = {
-        senderId: user.id,
-        recipientId: recipientId,
-        parcelId: parcelId,
-        messageText: newMessage,
-        messageType: selectedFile ? 'image' : 'text',
+        senderid: user.id,
+        recipientid: isCustomerMessage ? null : recipientId,
+        parcelid: parcelId,
+        content: newMessage,
+        message_type: selectedFile ? 'image' : 'text',
         language: language,
-        deliveryChannel: 'in-app',
-        fileUrl: fileUrl,
-        fileName: selectedFile ? selectedFile.name : null
+        delivery_channel: 'in-app',
+        file_url: fileUrl,
+        file_name: selectedFile ? selectedFile.name : null,
+        recipient_type: isCustomerMessage ? 'customer' : 'user',
+        customer_id: isCustomerMessage ? parcelId : null // Using parcelId as customer_id for customer messages
       }
 
       const newMessageRecord = await db.createMessage(messageData)
@@ -162,10 +167,10 @@ const ChatWindow = ({ parcelId, parcelType, recipientId, recipientPhone, recipie
 
       // Send notifications if enabled
       if (recipientPhone) {
-        await sendWhatsAppNotification()
+        await sendWhatsAppNotification(newMessageRecord)
       }
       if (recipientEmail) {
-        await sendEmailNotification()
+        await sendEmailNotification(newMessageRecord)
       }
 
       toast.success('Message sent!')
@@ -177,7 +182,7 @@ const ChatWindow = ({ parcelId, parcelType, recipientId, recipientPhone, recipie
     }
   }
 
-  const sendWhatsAppNotification = async (data) => {
+  const sendWhatsAppNotification = async (messageData) => {
     try {
       const response = await fetch('/.netlify/functions/sendWhatsApp', {
         method: 'POST',
@@ -185,7 +190,9 @@ const ChatWindow = ({ parcelId, parcelType, recipientId, recipientPhone, recipie
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          ...data,
+          to: recipientPhone,
+          message: messageData.content,
+          language: language,
           template: 'newMessage'
         })
       })
@@ -196,7 +203,7 @@ const ChatWindow = ({ parcelId, parcelType, recipientId, recipientPhone, recipie
     }
   }
 
-  const sendEmailNotification = async (data) => {
+  const sendEmailNotification = async (messageData) => {
     try {
       const response = await fetch('/.netlify/functions/sendEmail', {
         method: 'POST',
@@ -204,8 +211,11 @@ const ChatWindow = ({ parcelId, parcelType, recipientId, recipientPhone, recipie
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          ...data,
-          template: 'newMessage'
+          to: recipientEmail,
+          message: messageData.content,
+          language: language,
+          template: 'newMessage',
+          subject: 'New Message from SmartTrack'
         })
       })
 

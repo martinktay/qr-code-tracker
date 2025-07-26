@@ -206,9 +206,14 @@ const ScanAndLog = () => {
         await db.updateSackStatus(parcelData.sack_id, data.status)
       }
 
-      // Send WhatsApp notification if enabled
+      // Send notifications if enabled
       if (data.sendWhatsApp && parcelData.customers?.phone) {
         await sendWhatsAppNotification(parcelData, data.status, data.messageLanguage)
+      }
+      
+      // Send email notification if enabled
+      if (data.sendEmail && parcelData.customers?.username) {
+        await sendEmailNotification(parcelData, data.status, data.messageLanguage)
       }
 
       toast.success('Scan logged successfully!')
@@ -228,25 +233,48 @@ const ScanAndLog = () => {
 
   const sendWhatsAppNotification = async (parcel, status, language) => {
     try {
-      const messageTemplates = {
-        en: `Your package is now marked as "${status.replace('_', ' ')}" and is expected to arrive by ${new Date().toLocaleDateString()}.`,
-        fr: `Votre colis est maintenant "${status.replace('_', ' ')}" et devrait arriver d'ici ${new Date().toLocaleDateString()}.`,
-        yo: `Apoti rẹ ti jẹ́ pé "${status.replace('_', ' ')}" bayii. Ó ṣeé ṣe kí ó dé ní ${new Date().toLocaleDateString()}.`,
-        es: `Su paquete está marcado como "${status.replace('_', ' ')}" y se espera que llegue antes del ${new Date().toLocaleDateString()}.`
-      }
-
-      const message = messageTemplates[language] || messageTemplates.en
-
-      // This would integrate with Twilio WhatsApp API
-      console.log('WhatsApp notification:', {
-        to: parcel.customers.phone,
-        message: message
+      const response = await fetch('/.netlify/functions/sendWhatsApp', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          to: parcel.customers.phone,
+          status: status,
+          language: language,
+          template: 'statusUpdate'
+        })
       })
 
+      if (!response.ok) throw new Error('WhatsApp notification failed')
       toast.success('WhatsApp notification sent!')
     } catch (error) {
       console.error('Error sending WhatsApp notification:', error)
       toast.error('Failed to send WhatsApp notification')
+    }
+  }
+
+  const sendEmailNotification = async (parcel, status, language) => {
+    try {
+      const response = await fetch('/.netlify/functions/sendEmail', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          to: parcel.customers.username, // Assuming username is email
+          status: status,
+          language: language,
+          template: 'statusUpdate',
+          subject: 'Shipment Status Update'
+        })
+      })
+
+      if (!response.ok) throw new Error('Email notification failed')
+      toast.success('Email notification sent!')
+    } catch (error) {
+      console.error('Error sending email notification:', error)
+      toast.error('Failed to send email notification')
     }
   }
 
@@ -528,15 +556,27 @@ const ScanAndLog = () => {
                   </select>
                 </div>
 
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    {...register('sendWhatsApp')}
-                    className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-                  />
-                  <label className="ml-2 block text-sm text-gray-900">
-                    Send WhatsApp notification
-                  </label>
+                <div className="space-y-2">
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      {...register('sendWhatsApp')}
+                      className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                    />
+                    <label className="ml-2 block text-sm text-gray-900">
+                      Send WhatsApp notification
+                    </label>
+                  </div>
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      {...register('sendEmail')}
+                      className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                    />
+                    <label className="ml-2 block text-sm text-gray-900">
+                      Send Email notification
+                    </label>
+                  </div>
                 </div>
 
                 {location && (

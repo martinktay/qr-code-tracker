@@ -247,7 +247,13 @@ const ParcelTimeline = () => {
       {/* Chat Window */}
       {showChat && userRole === 'customer' && (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-          <ChatWindow parcelId={id} />
+          <ChatWindow 
+            parcelId={id}
+            parcelType={parcel.box_id ? 'box' : 'sack'}
+            recipientId="customer" // This indicates it's a customer message
+            recipientPhone={parcel.customers?.phone}
+            recipientEmail={parcel.customers?.username}
+          />
         </div>
       )}
 

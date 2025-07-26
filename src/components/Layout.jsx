@@ -107,7 +107,7 @@ const Layout = ({ children }) => {
     },
     { 
       name: 'Messaging', 
-      href: '/admin', 
+      href: '/admin-panel', 
       icon: MessageSquare, 
       allowedRoles: ['admin'],
       description: 'Communication settings'
