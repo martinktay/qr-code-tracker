@@ -19,14 +19,19 @@ const Login = () => {
   const { signIn, signUp, forceLogout } = useAuth()
   const navigate = useNavigate()
 
-  // Force logout any existing session when login page loads
+  // Only clear session if user is not already authenticated
   useEffect(() => {
     const clearExistingSession = async () => {
-      console.log('Login page: Clearing any existing session...')
-      await forceLogout()
+      if (!user) {
+        console.log('Login page: No user detected, clearing any existing session...')
+        await forceLogout()
+      } else {
+        console.log('Login page: User already authenticated, redirecting...')
+        navigate('/dashboard')
+      }
     }
     clearExistingSession()
-  }, [forceLogout])
+  }, [forceLogout, user, navigate])
 
   const handleSubmit = async (e) => {
     e.preventDefault()

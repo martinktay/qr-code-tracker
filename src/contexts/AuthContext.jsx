@@ -16,6 +16,11 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true)
   const [userRole, setUserRole] = useState(null)
 
+  // Debug user role changes
+  useEffect(() => {
+    console.log('User role changed to:', userRole)
+  }, [userRole])
+
   useEffect(() => {
     // Check active sessions and sets the user
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -97,6 +102,7 @@ export const AuthProvider = ({ children }) => {
         }
       }
 
+      console.log('Simple sign in successful:', { user: mockUser, role: data.role })
       setUser(mockUser)
       setUserRole(data.role)
       setLoading(false)
@@ -134,6 +140,7 @@ export const AuthProvider = ({ children }) => {
   }
 
   const signIn = async (email, password) => {
+    console.log('Sign in attempt for:', email)
     // Try Supabase Auth first, then fall back to simple auth for testing
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -147,6 +154,7 @@ export const AuthProvider = ({ children }) => {
         return await simpleSignIn(email, password)
       }
       
+      console.log('Supabase Auth successful:', data)
       return data
     } catch (error) {
       // If Supabase Auth throws an error, try simple auth
