@@ -31,13 +31,14 @@ class ParcelLabelPDF {
             
             <div style="margin-bottom: 15px;">
               <h3 style="margin: 0 0 10px 0; color: #374151; font-size: 14px; text-transform: uppercase;">${parcelType.toUpperCase()} INFORMATION</h3>
-              <div style="font-size: 11px; line-height: 1.4;">
-                <p style="margin: 2px 0;"><strong>ID:</strong> ${parcelData[`${parcelType}_id`]}</p>
-                <p style="margin: 2px 0;"><strong>Content:</strong> ${parcelData.content}</p>
-                <p style="margin: 2px 0;"><strong>Quantity:</strong> ${parcelData.quantity}</p>
-                <p style="margin: 2px 0;"><strong>Destination:</strong> ${parcelData.destination}</p>
-                <p style="margin: 2px 0;"><strong>Status:</strong> ${parcelData.status?.replace('_', ' ').toUpperCase() || 'PACKED'}</p>
-              </div>
+                                      <div style="font-size: 11px; line-height: 1.4;">
+                          <p style="margin: 2px 0;"><strong>ID:</strong> ${parcelData[`${parcelType}_id`]}</p>
+                          <p style="margin: 2px 0;"><strong>Content:</strong> ${parcelData.content}</p>
+                          <p style="margin: 2px 0;"><strong>Quantity:</strong> ${parcelData.quantity}</p>
+                          <p style="margin: 2px 0;"><strong>Weight:</strong> ${parcelData.weight_kg || 'N/A'} kg</p>
+                          <p style="margin: 2px 0;"><strong>Destination:</strong> ${parcelData.destination}</p>
+                          <p style="margin: 2px 0;"><strong>Status:</strong> ${parcelData.status?.replace('_', ' ').toUpperCase() || 'PACKED'}</p>
+                        </div>
             </div>
             
             <div style="margin-bottom: 15px;">
@@ -147,13 +148,14 @@ class ParcelLabelPDF {
               
               <div style="margin-bottom: 15px;">
                 <h3 style="margin: 0 0 10px 0; color: #374151; font-size: 14px; text-transform: uppercase;">${parcelType.toUpperCase()} INFORMATION</h3>
-                <div style="font-size: 11px; line-height: 1.4;">
-                  <p style="margin: 2px 0;"><strong>ID:</strong> ${parcel[`${parcelType}_id`]}</p>
-                  <p style="margin: 2px 0;"><strong>Content:</strong> ${parcel.content}</p>
-                  <p style="margin: 2px 0;"><strong>Quantity:</strong> ${parcel.quantity}</p>
-                  <p style="margin: 2px 0;"><strong>Destination:</strong> ${parcel.destination}</p>
-                  <p style="margin: 2px 0;"><strong>Status:</strong> ${parcel.status?.replace('_', ' ').toUpperCase() || 'PACKED'}</p>
-                </div>
+                                        <div style="font-size: 11px; line-height: 1.4;">
+                          <p style="margin: 2px 0;"><strong>ID:</strong> ${parcel[`${parcelType}_id`]}</p>
+                          <p style="margin: 2px 0;"><strong>Content:</strong> ${parcel.content}</p>
+                          <p style="margin: 2px 0;"><strong>Quantity:</strong> ${parcel.quantity}</p>
+                          <p style="margin: 2px 0;"><strong>Weight:</strong> ${parcel.weight_kg || 'N/A'} kg</p>
+                          <p style="margin: 2px 0;"><strong>Destination:</strong> ${parcel.destination}</p>
+                          <p style="margin: 2px 0;"><strong>Status:</strong> ${parcel.status?.replace('_', ' ').toUpperCase() || 'PACKED'}</p>
+                        </div>
               </div>
               
               <div style="margin-bottom: 15px;">

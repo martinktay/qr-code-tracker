@@ -28,7 +28,8 @@ const Dashboard = () => {
     pending: 0,
     totalCustomers: 0,
     totalUsers: 0,
-    alerts: 0
+    alerts: 0,
+    totalWeight: 0
   })
   const [recentParcels, setRecentParcels] = useState([])
   const [loading, setLoading] = useState(true)
@@ -58,12 +59,14 @@ const Dashboard = () => {
 
   const fetchAdminDashboard = async () => {
     // Admin sees all data and system statistics
-    const { data: boxes } = await supabase.from('boxes').select('status')
-    const { data: sacks } = await supabase.from('sacks').select('status')
+    const { data: boxes } = await supabase.from('boxes').select('status, weight_kg')
+    const { data: sacks } = await supabase.from('sacks').select('status, weight_kg')
     const { data: customers } = await supabase.from('customers').select('customer_id')
     const { data: users } = await supabase.from('user_accounts').select('user_id')
     
     const allParcels = [...(boxes || []), ...(sacks || [])]
+    const totalWeight = allParcels.reduce((sum, parcel) => sum + (parcel.weight_kg || 0), 0)
+    
     const stats = {
       totalBoxes: boxes?.length || 0,
       totalSacks: sacks?.length || 0,
@@ -72,7 +75,8 @@ const Dashboard = () => {
       pending: allParcels.filter(p => p.status === 'packed').length,
       totalCustomers: customers?.length || 0,
       totalUsers: users?.length || 0,
-      alerts: allParcels.filter(p => p.status === 'packed').length // Pending deliveries as alerts
+      alerts: allParcels.filter(p => p.status === 'packed').length, // Pending deliveries as alerts
+      totalWeight: totalWeight
     }
     
     setStats(stats)
@@ -376,6 +380,15 @@ const Dashboard = () => {
               <div className="ml-3">
                 <p className="text-sm font-medium text-gray-500">Pending</p>
                 <p className="text-2xl font-bold text-gray-900">{stats.pending}</p>
+              </div>
+            </div>
+          </div>
+          <div className="bg-white p-4 rounded-lg shadow">
+            <div className="flex items-center">
+              <TrendingUp className="h-8 w-8 text-indigo-600" />
+              <div className="ml-3">
+                <p className="text-sm font-medium text-gray-500">Total Weight</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.totalWeight.toFixed(1)} kg</p>
               </div>
             </div>
           </div>

@@ -164,8 +164,8 @@ const ParcelTimeline = ({ parcelId, scanHistory = [], parcelData = {} }) => {
       details.push({ label: 'Quantity', value: parcelData.quantity });
     }
     
-    if (parcelData.weight) {
-      details.push({ label: 'Weight', value: `${parcelData.weight} kg` });
+    if (parcelData.weight_kg) {
+      details.push({ label: 'Weight', value: `${parcelData.weight_kg} kg` });
     }
     
     if (parcelData.dimensions) {

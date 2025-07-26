@@ -74,6 +74,7 @@ const RegisterBox = () => {
         customer_id: customerId,
         content: data.content,
         quantity: parseInt(data.quantity),
+        weight_kg: parseFloat(data.weight),
         destination: data.destination,
         qr_code_url: qrCodeUrl,
         status: 'packed'
@@ -209,7 +210,7 @@ const RegisterBox = () => {
               )}
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Quantity
@@ -226,6 +227,25 @@ const RegisterBox = () => {
                 />
                 {errors.quantity && (
                   <p className="mt-1 text-sm text-red-600">{errors.quantity.message}</p>
+                )}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Weight (kg)
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  {...register('weight', { 
+                    required: 'Weight is required',
+                    min: { value: 0.01, message: 'Weight must be greater than 0' }
+                  })}
+                  className="input-field"
+                  placeholder="0.00"
+                  min="0.01"
+                />
+                {errors.weight && (
+                  <p className="mt-1 text-sm text-red-600">{errors.weight.message}</p>
                 )}
               </div>
               <div>
@@ -322,6 +342,10 @@ const RegisterBox = () => {
                   <div className="flex justify-between">
                     <span className="text-sm text-gray-500">Quantity:</span>
                     <span className="text-sm font-medium">{boxData?.quantity}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-500">Weight:</span>
+                    <span className="text-sm font-medium">{boxData?.weight_kg} kg</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm text-gray-500">Destination:</span>
