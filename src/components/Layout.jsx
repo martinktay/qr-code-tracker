@@ -161,7 +161,7 @@ const Layout = ({ children }) => {
           <div className="flex h-16 items-center justify-between px-4">
             <div className="flex items-center">
               <Building2 className="h-8 w-8 text-primary-600 mr-2" />
-              <h1 className="text-xl font-bold text-primary-600">SmartTrack</h1>
+              <h1 className="text-xl font-bold text-primary-600">SmartExporters</h1>
             </div>
             <button
               onClick={() => setSidebarOpen(false)}
@@ -226,7 +226,7 @@ const Layout = ({ children }) => {
         <div className="flex flex-col flex-grow bg-gradient-to-b from-white to-gray-50 border-r border-gray-200">
           <div className="flex h-16 items-center px-4 bg-gradient-to-r from-blue-600 to-indigo-600">
             <Building2 className="h-8 w-8 text-white mr-2" />
-            <h1 className="text-xl font-bold text-white">SmartTrack</h1>
+            <h1 className="text-xl font-bold text-white">SmartExporters</h1>
           </div>
           <nav className="flex-1 space-y-2 px-3 py-6">
             {filteredNavigation.map((item) => {
@@ -295,7 +295,7 @@ const Layout = ({ children }) => {
             <div className="flex flex-1">
               <div className="flex items-center">
                 <h2 className="text-xl font-bold text-gray-900">
-                  {filteredNavigation.find(item => item.href === location.pathname)?.name || 'SmartTrack'}
+                  {filteredNavigation.find(item => item.href === location.pathname)?.name || 'SmartExporters'}
                 </h2>
               </div>
             </div>

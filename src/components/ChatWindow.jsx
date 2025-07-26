@@ -215,7 +215,7 @@ const ChatWindow = ({ parcelId, parcelType, recipientId, recipientPhone, recipie
           message: messageData.content,
           language: language,
           template: 'newMessage',
-          subject: 'New Message from SmartTrack'
+          subject: 'New Message from SmartExporters'
         })
       })
 

@@ -773,7 +773,7 @@ const Dashboard = () => {
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
           <p className="text-gray-600 mt-2">
-            Welcome to SmartTrack Logistics Platform
+            Welcome to SmartExporters Logistics Platform
             {userRole === 'admin' && ' - Administrative View'}
             {userRole === 'warehouse_staff' && ' - Operations View'}
             {userRole === 'customer' && ' - Customer View'}

@@ -67,7 +67,7 @@ const Login = () => {
             <Building2 className="h-8 w-8 text-white" />
           </div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            {isLogin ? 'Welcome to SmartTrack' : 'Join SmartTrack'}
+            {isLogin ? 'Welcome to SmartExporters' : 'Join SmartExporters'}
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
             {isLogin ? 'Sign in to access your logistics dashboard' : 'Create your account to get started'}
@@ -236,7 +236,7 @@ const Login = () => {
                   {isLogin ? (
                     <>
                       <Shield className="h-5 w-5 mr-2" />
-                      Sign In to SmartTrack
+                                             Sign In to SmartExporters
                     </>
                   ) : (
                     <>

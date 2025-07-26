@@ -67,7 +67,7 @@ const CustomerPortal = () => {
           <div className="flex justify-between items-center py-6">
             <div className="flex items-center">
               <Package className="h-8 w-8 text-primary-600 mr-3" />
-              <h1 className="text-2xl font-bold text-gray-900">SmartTrack</h1>
+              <h1 className="text-2xl font-bold text-gray-900">SmartExporters</h1>
             </div>
             <div className="text-sm text-gray-500">
               Track your packages easily

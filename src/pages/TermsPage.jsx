@@ -35,10 +35,10 @@ const TermsPage = () => {
 Last updated: ${new Date().toLocaleDateString()}
 
 1. ACCEPTANCE OF TERMS
-By accessing and using the SmartTrack logistics platform, you accept and agree to be bound by the terms and provision of this agreement.
+By accessing and using the SmartExporters logistics platform, you accept and agree to be bound by the terms and provision of this agreement.
 
 2. DESCRIPTION OF SERVICE
-SmartTrack is a logistics tracking platform that allows users to:
+SmartExporters is a logistics tracking platform that allows users to:
 - Register and track packages (boxes and sacks)
 - Receive real-time updates on package status
 - Access delivery timelines and location information
@@ -55,7 +55,7 @@ Users are responsible for:
 We are committed to protecting your privacy. Please refer to our Privacy Policy for details on how we collect, use, and protect your personal information.
 
 5. INTELLECTUAL PROPERTY
-All content, features, and functionality of the SmartTrack platform are owned by ${companyName} and are protected by international copyright, trademark, and other intellectual property laws.
+All content, features, and functionality of the SmartExporters platform are owned by ${companyName} and are protected by international copyright, trademark, and other intellectual property laws.
 
 6. LIMITATION OF LIABILITY
 ${companyName} shall not be liable for any indirect, incidental, special, consequential, or punitive damages resulting from your use of the service.
@@ -94,7 +94,7 @@ If any provision of these terms is found to be unenforceable, the remaining prov
               <FileText className="h-8 w-8 text-primary-600 mr-3" />
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">Terms of Use</h1>
-                <p className="text-sm text-gray-500">SmartTrack Logistics Platform</p>
+                <p className="text-sm text-gray-500">SmartExporters Logistics Platform</p>
               </div>
             </div>
           </div>

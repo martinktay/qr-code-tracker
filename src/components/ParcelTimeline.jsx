@@ -357,7 +357,7 @@ const ParcelTimeline = ({ parcelId, scanHistory = [], parcelData = {} }) => {
         <div className="flex items-center justify-between text-sm text-gray-600">
           <div className="flex items-center space-x-2">
             {isBox ? <Box className="w-4 h-4" /> : isSack ? <Package2 className="w-4 h-4" /> : <Package className="w-4 h-4" />}
-            <span>Tracking provided by SmartTrack</span>
+            <span>Tracking provided by SmartExporters</span>
           </div>
           <div className="flex items-center space-x-2">
             <Clock className="w-4 h-4" />

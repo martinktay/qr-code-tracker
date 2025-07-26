@@ -44,7 +44,7 @@ We collect information you provide directly to us, such as:
 
 2. HOW WE USE YOUR INFORMATION
 We use the information we collect to:
-- Provide and maintain the SmartTrack logistics service
+- Provide and maintain the SmartExporters logistics service
 - Process package registrations and updates
 - Send tracking updates and notifications
 - Improve our services and user experience
@@ -116,7 +116,7 @@ This privacy policy is governed by the laws of Nigeria and applicable data prote
               <Shield className="h-8 w-8 text-primary-600 mr-3" />
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">Privacy Policy</h1>
-                <p className="text-sm text-gray-500">SmartTrack Logistics Platform</p>
+                <p className="text-sm text-gray-500">SmartExporters Logistics Platform</p>
               </div>
             </div>
           </div>
