@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
 import InternationalShippingAnalytics from '../components/InternationalShippingAnalytics'
+import WarehouseStaffAnalytics from '../components/WarehouseStaffAnalytics'
 import { 
   Package, 
   Package2, 
@@ -35,7 +36,7 @@ const Dashboard = () => {
   })
   const [recentParcels, setRecentParcels] = useState([])
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState('overview') // 'overview' or 'international'
+  const [activeTab, setActiveTab] = useState('overview') // 'overview', 'international', or 'warehouse'
 
   useEffect(() => {
     fetchDashboardData()
@@ -681,7 +682,39 @@ const Dashboard = () => {
       )}
 
       {/* Other Role Dashboards */}
-      {userRole === 'warehouse_staff' && renderWarehouseDashboard()}
+      {userRole === 'warehouse_staff' && (
+        <div className="space-y-6">
+          {/* Tab Navigation for Warehouse Staff */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+            <nav className="flex space-x-8 px-6 py-4">
+              <button
+                onClick={() => setActiveTab('overview')}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'overview'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Operations Overview
+              </button>
+              <button
+                onClick={() => setActiveTab('warehouse')}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'warehouse'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Detailed Analytics
+              </button>
+            </nav>
+          </div>
+
+          {/* Tab Content for Warehouse Staff */}
+          {activeTab === 'overview' && renderWarehouseDashboard()}
+          {activeTab === 'warehouse' && <WarehouseStaffAnalytics />}
+        </div>
+      )}
       {userRole === 'customer' && renderCustomerDashboard()}
 
       {/* Track Package Section */}
