@@ -17,7 +17,9 @@ import {
   Trash2,
   Printer,
   Package,
-  Package2
+  Package2,
+  Edit,
+  X
 } from 'lucide-react';
 import { db } from '../lib/supabase';
 import toast from 'react-hot-toast';
@@ -42,6 +44,7 @@ const AdminPanel = () => {
     role: 'customer',
     name: ''
   });
+  const [editingUser, setEditingUser] = useState(null);
   const [parcels, setParcels] = useState({ boxes: [], sacks: [] });
   const [selectedParcels, setSelectedParcels] = useState({ boxes: [], sacks: [] });
 
@@ -114,6 +117,45 @@ const AdminPanel = () => {
 
   const deleteUser = async (userId) => {
     if (!confirm('Are you sure you want to delete this user?')) return;
+
+  const editUser = (user) => {
+    setEditingUser({
+      user_id: user.user_id,
+      email: user.username,
+      phone: user.phone || '',
+      role: user.role,
+      name: user.name || user.username
+    });
+  };
+
+  const updateUser = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      // Update user in user_accounts table
+      await db.updateUser(editingUser.user_id, {
+        username: editingUser.email,
+        role: editingUser.role,
+        phone: editingUser.phone,
+        name: editingUser.name,
+        updated_at: new Date().toISOString()
+      });
+
+      toast.success('User updated successfully!');
+      setEditingUser(null);
+      fetchUsers();
+    } catch (error) {
+      console.error('Error updating user:', error);
+      toast.error('Failed to update user');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const cancelEdit = () => {
+    setEditingUser(null);
+  };
 
   const printBulkLabels = async (parcelType) => {
     const selectedItems = selectedParcels[parcelType];
@@ -402,19 +444,31 @@ const AdminPanel = () => {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {user.username}
+                        <div>
+                          <div>{user.username}</div>
+                          {user.phone && <div className="text-xs text-gray-400">{user.phone}</div>}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {new Date(user.created_at).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <button
-                          onClick={() => deleteUser(user.user_id)}
-                          className="text-red-600 hover:text-red-900 flex items-center"
-                        >
-                          <Trash2 className="w-4 h-4 mr-1" />
-                          Delete
-                        </button>
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => editUser(user)}
+                            className="text-blue-600 hover:text-blue-900 flex items-center"
+                          >
+                            <Edit className="w-4 h-4 mr-1" />
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => deleteUser(user.user_id)}
+                            className="text-red-600 hover:text-red-900 flex items-center"
+                          >
+                            <Trash2 className="w-4 h-4 mr-1" />
+                            Delete
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -422,6 +476,106 @@ const AdminPanel = () => {
               </table>
             </div>
           </div>
+
+          {/* Edit User Modal */}
+          {editingUser && (
+            <div className="bg-white rounded-lg shadow p-6 mt-6 border-2 border-blue-200">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold flex items-center">
+                  <Edit className="w-5 h-5 mr-2 text-blue-600" />
+                  Edit User: {editingUser.name}
+                </h3>
+                <button
+                  onClick={cancelEdit}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              
+              <form onSubmit={updateUser} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <Mail className="w-4 h-4 inline mr-1" />
+                      Email Address
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      value={editingUser.email}
+                      onChange={(e) => setEditingUser({...editingUser, email: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="user@example.com"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <Phone className="w-4 h-4 inline mr-1" />
+                      Phone Number
+                    </label>
+                    <input
+                      type="tel"
+                      value={editingUser.phone}
+                      onChange={(e) => setEditingUser({...editingUser, phone: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="+1234567890"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <UserCheck className="w-4 h-4 inline mr-1" />
+                      Full Name
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={editingUser.name}
+                      onChange={(e) => setEditingUser({...editingUser, name: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="John Doe"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Role
+                    </label>
+                    <select
+                      value={editingUser.role}
+                      onChange={(e) => setEditingUser({...editingUser, role: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="customer">Customer</option>
+                      <option value="warehouse">Warehouse Staff</option>
+                      <option value="admin">Admin</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <div className="flex space-x-3">
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50 flex items-center"
+                  >
+                    <Save className="w-4 h-4 mr-2" />
+                    {loading ? 'Updating...' : 'Update User'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={cancelEdit}
+                    className="bg-gray-500 text-white px-6 py-2 rounded-md hover:bg-gray-600 flex items-center"
+                  >
+                    <X className="w-4 h-4 mr-2" />
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
         </div>
       )}
 

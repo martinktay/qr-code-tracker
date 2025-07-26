@@ -353,6 +353,25 @@ export const db = {
     }
   },
 
+  async updateUser(userId, userData) {
+    try {
+      // Update user in user_accounts table
+      const { data, error } = await supabase
+        .from('user_accounts')
+        .update(userData)
+        .eq('user_id', userId)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      return data;
+    } catch (error) {
+      console.error('Error updating user:', error);
+      throw error;
+    }
+  },
+
   // Parcel operations
   async getParcelById(parcelId, parcelType) {
     const { data, error } = await supabase
