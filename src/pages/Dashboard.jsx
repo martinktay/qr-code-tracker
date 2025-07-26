@@ -61,209 +61,278 @@ const Dashboard = () => {
   }
 
   const fetchAdminDashboard = async () => {
-    // Admin sees all data and system statistics
-    const { data: boxes } = await supabase.from('boxes').select('status, weight_kg')
-    const { data: sacks } = await supabase.from('sacks').select('status, weight_kg')
-    const { data: customers } = await supabase.from('customers').select('customer_id')
-    const { data: users } = await supabase.from('user_accounts').select('user_id')
-    
-    const allParcels = [...(boxes || []), ...(sacks || [])]
-    const totalWeight = allParcels.reduce((sum, parcel) => sum + (parcel.weight_kg || 0), 0)
-    
-    const stats = {
-      totalBoxes: boxes?.length || 0,
-      totalSacks: sacks?.length || 0,
-      inTransit: allParcels.filter(p => p.status === 'in_transit').length,
-      delivered: allParcels.filter(p => p.status === 'delivered').length,
-      pending: allParcels.filter(p => p.status === 'packed').length,
-      totalCustomers: customers?.length || 0,
-      totalUsers: users?.length || 0,
-      alerts: allParcels.filter(p => p.status === 'packed').length, // Pending deliveries as alerts
-      totalWeight: totalWeight
+    try {
+      // Admin sees all data and system statistics
+      const { data: boxes, error: boxesError } = await supabase
+        .from('boxes')
+        .select('status, weight_kg, created_at')
+      
+      if (boxesError) {
+        console.error('Error fetching boxes:', boxesError)
+      }
+      
+      const { data: sacks, error: sacksError } = await supabase
+        .from('sacks')
+        .select('status, weight_kg, created_at')
+      
+      if (sacksError) {
+        console.error('Error fetching sacks:', sacksError)
+      }
+      
+      const { data: customers, error: customersError } = await supabase
+        .from('customers')
+        .select('customer_id')
+      
+      if (customersError) {
+        console.error('Error fetching customers:', customersError)
+      }
+      
+      const { data: users, error: usersError } = await supabase
+        .from('user_accounts')
+        .select('user_id')
+      
+      if (usersError) {
+        console.error('Error fetching users:', usersError)
+      }
+      
+      const allParcels = [...(boxes || []), ...(sacks || [])]
+      const totalWeight = allParcels.reduce((sum, parcel) => sum + (parcel.weight_kg || 0), 0)
+      
+      const stats = {
+        totalBoxes: boxes?.length || 0,
+        totalSacks: sacks?.length || 0,
+        inTransit: allParcels.filter(p => p.status === 'in_transit').length,
+        delivered: allParcels.filter(p => p.status === 'delivered').length,
+        pending: allParcels.filter(p => p.status === 'packed').length,
+        totalCustomers: customers?.length || 0,
+        totalUsers: users?.length || 0,
+        alerts: allParcels.filter(p => p.status === 'packed').length, // Pending deliveries as alerts
+        totalWeight: totalWeight
+      }
+      
+      setStats(stats)
+
+      // Fetch recent parcels for admin
+      const { data: recentBoxes } = await supabase
+        .from('boxes')
+        .select(`
+          *,
+          customers (
+            first_name,
+            last_name,
+            phone
+          )
+        `)
+        .order('created_at', { ascending: false })
+        .limit(5)
+
+      const { data: recentSacks } = await supabase
+        .from('sacks')
+        .select(`
+          *,
+          customers (
+            first_name,
+            last_name,
+            phone
+          )
+        `)
+        .order('created_at', { ascending: false })
+        .limit(5)
+
+      const recent = [
+        ...(recentBoxes || []).map(box => ({ ...box, type: 'box' })),
+        ...(recentSacks || []).map(sack => ({ ...sack, type: 'sack' }))
+      ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 5)
+
+      setRecentParcels(recent)
+    } catch (error) {
+      console.error('Error fetching admin dashboard data:', error)
+      toast.error('Failed to load admin dashboard data')
     }
-    
-    setStats(stats)
-
-    // Fetch recent parcels for admin
-    const { data: recentBoxes } = await supabase
-      .from('boxes')
-      .select(`
-        *,
-        customers (
-          first_name,
-          last_name,
-          phone
-        )
-      `)
-      .order('created_at', { ascending: false })
-      .limit(5)
-
-    const { data: recentSacks } = await supabase
-      .from('sacks')
-      .select(`
-        *,
-        customers (
-          first_name,
-          last_name,
-          phone
-        )
-      `)
-      .order('created_at', { ascending: false })
-      .limit(5)
-
-    const recent = [
-      ...(recentBoxes || []).map(box => ({ ...box, type: 'box' })),
-      ...(recentSacks || []).map(sack => ({ ...sack, type: 'sack' }))
-    ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 5)
-
-    setRecentParcels(recent)
   }
 
   const fetchWarehouseDashboard = async () => {
-    // Warehouse staff sees operational data - parcels they need to handle
-    const { data: boxes } = await supabase
-      .from('boxes')
-      .select('status')
-      .in('status', ['packed', 'in_transit', 'out_for_delivery'])
-    
-    const { data: sacks } = await supabase
-      .from('sacks')
-      .select('status')
-      .in('status', ['packed', 'in_transit', 'out_for_delivery'])
-    
-    const allParcels = [...(boxes || []), ...(sacks || [])]
-    const stats = {
-      totalBoxes: boxes?.length || 0,
-      totalSacks: sacks?.length || 0,
-      inTransit: allParcels.filter(p => p.status === 'in_transit').length,
-      delivered: 0, // Warehouse staff don't see delivered items
-      pending: allParcels.filter(p => p.status === 'packed').length,
-      totalCustomers: 0,
-      totalUsers: 0,
-      alerts: allParcels.filter(p => p.status === 'packed').length // Pending items to process
+    try {
+      // Warehouse staff sees operational data - parcels they need to handle
+      const { data: boxes, error: boxesError } = await supabase
+        .from('boxes')
+        .select('status, weight_kg')
+        .in('status', ['packed', 'in_transit', 'out_for_delivery'])
+      
+      if (boxesError) {
+        console.error('Error fetching boxes:', boxesError)
+      }
+      
+      const { data: sacks, error: sacksError } = await supabase
+        .from('sacks')
+        .select('status, weight_kg')
+        .in('status', ['packed', 'in_transit', 'out_for_delivery'])
+      
+      if (sacksError) {
+        console.error('Error fetching sacks:', sacksError)
+      }
+      
+      const allParcels = [...(boxes || []), ...(sacks || [])]
+      const totalWeight = allParcels.reduce((sum, parcel) => sum + (parcel.weight_kg || 0), 0)
+      
+      const stats = {
+        totalBoxes: boxes?.length || 0,
+        totalSacks: sacks?.length || 0,
+        inTransit: allParcels.filter(p => p.status === 'in_transit').length,
+        delivered: 0, // Warehouse staff don't see delivered items
+        pending: allParcels.filter(p => p.status === 'packed').length,
+        totalCustomers: 0,
+        totalUsers: 0,
+        alerts: allParcels.filter(p => p.status === 'packed').length, // Pending items to process
+        totalWeight: totalWeight
+      }
+      
+      setStats(stats)
+
+      // Fetch parcels that need attention
+      const { data: recentBoxes } = await supabase
+        .from('boxes')
+        .select(`
+          *,
+          customers (
+            first_name,
+            last_name,
+            phone
+          )
+        `)
+        .in('status', ['packed', 'in_transit', 'out_for_delivery'])
+        .order('created_at', { ascending: false })
+        .limit(5)
+
+      const { data: recentSacks } = await supabase
+        .from('sacks')
+        .select(`
+          *,
+          customers (
+            first_name,
+            last_name,
+            phone
+          )
+        `)
+        .in('status', ['packed', 'in_transit', 'out_for_delivery'])
+        .order('created_at', { ascending: false })
+        .limit(5)
+
+      const recent = [
+        ...(recentBoxes || []).map(box => ({ ...box, type: 'box' })),
+        ...(recentSacks || []).map(sack => ({ ...sack, type: 'sack' }))
+      ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 5)
+
+      setRecentParcels(recent)
+    } catch (error) {
+      console.error('Error fetching warehouse dashboard data:', error)
+      toast.error('Failed to load warehouse dashboard data')
     }
-    
-    setStats(stats)
-
-    // Fetch parcels that need attention
-    const { data: recentBoxes } = await supabase
-      .from('boxes')
-      .select(`
-        *,
-        customers (
-          first_name,
-          last_name,
-          phone
-        )
-      `)
-      .in('status', ['packed', 'in_transit', 'out_for_delivery'])
-      .order('created_at', { ascending: false })
-      .limit(5)
-
-    const { data: recentSacks } = await supabase
-      .from('sacks')
-      .select(`
-        *,
-        customers (
-          first_name,
-          last_name,
-          phone
-        )
-      `)
-      .in('status', ['packed', 'in_transit', 'out_for_delivery'])
-      .order('created_at', { ascending: false })
-      .limit(5)
-
-    const recent = [
-      ...(recentBoxes || []).map(box => ({ ...box, type: 'box' })),
-      ...(recentSacks || []).map(sack => ({ ...sack, type: 'sack' }))
-    ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 5)
-
-    setRecentParcels(recent)
   }
 
   const fetchCustomerDashboard = async () => {
-    // Customer sees only their own parcels
-    const { data: customer } = await supabase
-      .from('customers')
-      .select('customer_id')
-      .eq('phone', user?.phone || '')
-      .single()
+    try {
+      // Customer sees only their own parcels
+      const { data: customer, error: customerError } = await supabase
+        .from('customers')
+        .select('customer_id')
+        .eq('phone', user?.phone || '')
+        .maybeSingle()
 
-    if (!customer) {
-      setStats({
-        totalBoxes: 0,
-        totalSacks: 0,
-        inTransit: 0,
-        delivered: 0,
-        pending: 0,
+      if (customerError) {
+        console.error('Error fetching customer:', customerError)
+      }
+
+      if (!customer) {
+        setStats({
+          totalBoxes: 0,
+          totalSacks: 0,
+          inTransit: 0,
+          delivered: 0,
+          pending: 0,
+          totalCustomers: 0,
+          totalUsers: 0,
+          alerts: 0,
+          totalWeight: 0
+        })
+        setRecentParcels([])
+        return
+      }
+
+      const { data: boxes, error: boxesError } = await supabase
+        .from('boxes')
+        .select('status, weight_kg')
+        .eq('customer_id', customer.customer_id)
+      
+      if (boxesError) {
+        console.error('Error fetching customer boxes:', boxesError)
+      }
+      
+      const { data: sacks, error: sacksError } = await supabase
+        .from('sacks')
+        .select('status, weight_kg')
+        .eq('customer_id', customer.customer_id)
+      
+      if (sacksError) {
+        console.error('Error fetching customer sacks:', sacksError)
+      }
+      
+      const allParcels = [...(boxes || []), ...(sacks || [])]
+      const totalWeight = allParcels.reduce((sum, parcel) => sum + (parcel.weight_kg || 0), 0)
+      
+      const stats = {
+        totalBoxes: boxes?.length || 0,
+        totalSacks: sacks?.length || 0,
+        inTransit: allParcels.filter(p => p.status === 'in_transit').length,
+        delivered: allParcels.filter(p => p.status === 'delivered').length,
+        pending: allParcels.filter(p => p.status === 'packed').length,
         totalCustomers: 0,
         totalUsers: 0,
-        alerts: 0
-      })
-      setRecentParcels([])
-      return
+        alerts: allParcels.filter(p => p.status === 'in_transit').length, // In-transit items as alerts
+        totalWeight: totalWeight
+      }
+      
+      setStats(stats)
+
+      // Fetch customer's parcels
+      const { data: recentBoxes } = await supabase
+        .from('boxes')
+        .select(`
+          *,
+          customers (
+            first_name,
+            last_name,
+            phone
+          )
+        `)
+        .eq('customer_id', customer.customer_id)
+        .order('created_at', { ascending: false })
+        .limit(5)
+
+      const { data: recentSacks } = await supabase
+        .from('sacks')
+        .select(`
+          *,
+          customers (
+            first_name,
+            last_name,
+            phone
+          )
+        `)
+        .eq('customer_id', customer.customer_id)
+        .order('created_at', { ascending: false })
+        .limit(5)
+
+      const recent = [
+        ...(recentBoxes || []).map(box => ({ ...box, type: 'box' })),
+        ...(recentSacks || []).map(sack => ({ ...sack, type: 'sack' }))
+      ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 5)
+
+      setRecentParcels(recent)
+    } catch (error) {
+      console.error('Error fetching customer dashboard data:', error)
+      toast.error('Failed to load customer dashboard data')
     }
-
-    const { data: boxes } = await supabase
-      .from('boxes')
-      .select('status')
-      .eq('customer_id', customer.customer_id)
-    
-    const { data: sacks } = await supabase
-      .from('sacks')
-      .select('status')
-      .eq('customer_id', customer.customer_id)
-    
-    const allParcels = [...(boxes || []), ...(sacks || [])]
-    const stats = {
-      totalBoxes: boxes?.length || 0,
-      totalSacks: sacks?.length || 0,
-      inTransit: allParcels.filter(p => p.status === 'in_transit').length,
-      delivered: allParcels.filter(p => p.status === 'delivered').length,
-      pending: allParcels.filter(p => p.status === 'packed').length,
-      totalCustomers: 0,
-      totalUsers: 0,
-      alerts: allParcels.filter(p => p.status === 'in_transit').length // In-transit items as alerts
-    }
-    
-    setStats(stats)
-
-    // Fetch customer's parcels
-    const { data: recentBoxes } = await supabase
-      .from('boxes')
-      .select(`
-        *,
-        customers (
-          first_name,
-          last_name,
-          phone
-        )
-      `)
-      .eq('customer_id', customer.customer_id)
-      .order('created_at', { ascending: false })
-      .limit(5)
-
-    const { data: recentSacks } = await supabase
-      .from('sacks')
-      .select(`
-        *,
-        customers (
-          first_name,
-          last_name,
-          phone
-        )
-      `)
-      .eq('customer_id', customer.customer_id)
-      .order('created_at', { ascending: false })
-      .limit(5)
-
-    const recent = [
-      ...(recentBoxes || []).map(box => ({ ...box, type: 'box' })),
-      ...(recentSacks || []).map(sack => ({ ...sack, type: 'sack' }))
-    ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 5)
-
-    setRecentParcels(recent)
   }
 
   const getStatusColor = (status) => {

@@ -118,6 +118,16 @@ const AdminPanel = () => {
   const deleteUser = async (userId) => {
     if (!confirm('Are you sure you want to delete this user?')) return;
 
+    try {
+      await db.deleteUser(userId);
+      toast.success('User deleted successfully!');
+      fetchUsers();
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      toast.error('Failed to delete user');
+    }
+  };
+
   const editUser = (user) => {
     setEditingUser({
       user_id: user.user_id,
@@ -183,16 +193,6 @@ const AdminPanel = () => {
         ? prev[parcelType].filter(id => id !== parcelId)
         : [...prev[parcelType], parcelId]
     }));
-  };
-
-    try {
-      await db.deleteUser(userId);
-      toast.success('User deleted successfully!');
-      fetchUsers();
-    } catch (error) {
-      console.error('Error deleting user:', error);
-      toast.error('Failed to delete user');
-    }
   };
 
   const getRoleColor = (role) => {

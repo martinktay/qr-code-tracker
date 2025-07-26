@@ -276,15 +276,17 @@ export const db = {
         .from('user_accounts')
         .select('role')
         .eq('user_id', userId)
-        .single()
+        .maybeSingle() // Use maybeSingle instead of single to avoid 406 error
       
       if (error) {
-        throw error
+        console.error('Error fetching user role:', error)
+        return 'customer' // Default role if error occurs
       }
       
-      return data.role
+      return data?.role || 'customer' // Return default role if no data found
     } catch (error) {
-      throw error
+      console.error('Error in getUserRole:', error)
+      return 'customer' // Default role on any error
     }
   },
 

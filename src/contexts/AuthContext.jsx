@@ -48,19 +48,11 @@ export const AuthProvider = ({ children }) => {
 
   const fetchUserRole = async (userId) => {
     try {
-      // Try to get user role with a shorter timeout
-      const rolePromise = db.getUserRole(userId)
-      const role = await Promise.race([
-        rolePromise, 
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000))
-      ])
-      
+      const role = await db.getUserRole(userId)
       setUserRole(role)
     } catch (error) {
       console.error('Error fetching user role:', error)
-      
-      // If user doesn't exist, set a default role and continue
-      setUserRole('admin') // Default to admin for now
+      setUserRole('customer') // Default to customer role
     } finally {
       setLoading(false)
     }
