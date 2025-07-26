@@ -134,59 +134,116 @@ export const db = {
     // Check if identifier looks like a UUID (for exact ID matching)
     const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(identifier)
     
+    // Check if identifier looks like a phone number
+    const isPhoneNumber = /^[\+]?[0-9\s\-\(\)]+$/.test(identifier)
+    
+    let boxes = []
+    let sacks = []
+    
     // Search in boxes
-    let boxQuery = supabase
-      .from('boxes')
-      .select(`
-        *,
-        customers (
-          first_name,
-          last_name,
-          phone,
-          destination
-        )
-      `)
-    
-    if (isUUID) {
-      // If it's a UUID, try exact match first
-      boxQuery = boxQuery.or(`box_id.eq.${identifier},qr_code_url.ilike.%${identifier}%`)
-    } else {
-      // If it's not a UUID, use ILIKE for partial matching
-      boxQuery = boxQuery.or(`box_id.ilike.%${identifier}%,qr_code_url.ilike.%${identifier}%,customers.phone.ilike.%${identifier}%`)
+    try {
+      let boxQuery = supabase
+        .from('boxes')
+        .select(`
+          *,
+          customers (
+            first_name,
+            last_name,
+            phone,
+            destination
+          )
+        `)
+      
+      if (isUUID) {
+        // If it's a UUID, try exact match first
+        boxQuery = boxQuery.or(`box_id.eq.${identifier},qr_code_url.ilike.%${identifier}%`)
+      } else {
+        // If it's not a UUID, use ILIKE for partial matching
+        boxQuery = boxQuery.or(`box_id.ilike.%${identifier}%,qr_code_url.ilike.%${identifier}%`)
+      }
+      
+      const { data: boxData, error: boxError } = await boxQuery
+      if (boxError) throw boxError
+      boxes = boxData || []
+    } catch (error) {
+      console.error('Box search error:', error)
     }
-    
-    const { data: boxes, error: boxError } = await boxQuery
-    
-    if (boxError) throw boxError
 
     // Search in sacks
-    let sackQuery = supabase
-      .from('sacks')
-      .select(`
-        *,
-        customers (
-          first_name,
-          last_name,
-          phone,
-          destination
-        )
-      `)
-    
-    if (isUUID) {
-      // If it's a UUID, try exact match first
-      sackQuery = sackQuery.or(`sack_id.eq.${identifier},qr_code_url.ilike.%${identifier}%`)
-    } else {
-      // If it's not a UUID, use ILIKE for partial matching
-      sackQuery = sackQuery.or(`sack_id.ilike.%${identifier}%,qr_code_url.ilike.%${identifier}%,customers.phone.ilike.%${identifier}%`)
+    try {
+      let sackQuery = supabase
+        .from('sacks')
+        .select(`
+          *,
+          customers (
+            first_name,
+            last_name,
+            phone,
+            destination
+          )
+        `)
+      
+      if (isUUID) {
+        // If it's a UUID, try exact match first
+        sackQuery = sackQuery.or(`sack_id.eq.${identifier},qr_code_url.ilike.%${identifier}%`)
+      } else {
+        // If it's not a UUID, use ILIKE for partial matching
+        sackQuery = sackQuery.or(`sack_id.ilike.%${identifier}%,qr_code_url.ilike.%${identifier}%`)
+      }
+      
+      const { data: sackData, error: sackError } = await sackQuery
+      if (sackError) throw sackError
+      sacks = sackData || []
+    } catch (error) {
+      console.error('Sack search error:', error)
     }
-    
-    const { data: sacks, error: sackError } = await sackQuery
-    
-    if (sackError) throw sackError
+
+    // If it looks like a phone number, also search by customer phone
+    if (isPhoneNumber) {
+      try {
+        // Search boxes by customer phone
+        const { data: phoneBoxes, error: phoneBoxError } = await supabase
+          .from('boxes')
+          .select(`
+            *,
+            customers (
+              first_name,
+              last_name,
+              phone,
+              destination
+            )
+          `)
+          .ilike('customers.phone', `%${identifier}%`)
+        
+        if (!phoneBoxError && phoneBoxes) {
+          boxes = [...boxes, ...phoneBoxes]
+        }
+        
+        // Search sacks by customer phone
+        const { data: phoneSacks, error: phoneSackError } = await supabase
+          .from('sacks')
+          .select(`
+            *,
+            customers (
+              first_name,
+              last_name,
+              phone,
+              destination
+            )
+          `)
+          .ilike('customers.phone', `%${identifier}%`)
+        
+        if (!phoneSackError && phoneSacks) {
+          sacks = [...sacks, ...phoneSacks]
+        }
+      } catch (error) {
+        console.error('Phone search error:', error)
+      }
+    }
 
     return {
-      boxes: boxes || [],
-      sacks: sacks || []
+      boxes: boxes,
+      sacks: sacks
     }
   },
 
