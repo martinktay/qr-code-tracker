@@ -1,5 +1,5 @@
-const nodemailer = require('nodemailer')
-const { templates } = require('../../src/utils/messageTemplates')
+import nodemailer from 'nodemailer'
+import { templates } from '../../src/utils/messageTemplates.js'
 
 // Production SMTP config (replace with your real SMTP server details)
 let transporter = nodemailer.createTransport({
@@ -12,7 +12,7 @@ let transporter = nodemailer.createTransport({
   }
 })
 
-exports.handler = async function(event) {
+export const handler = async function(event) {
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,

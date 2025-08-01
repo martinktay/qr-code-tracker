@@ -1,12 +1,12 @@
-const twilio = require('twilio')
-const { templates } = require('../../src/utils/messageTemplates')
+import twilio from 'twilio'
+import { templates } from '../../src/utils/messageTemplates.js'
 
 const accountSid = process.env.TWILIO_ACCOUNT_SID
 const authToken = process.env.TWILIO_AUTH_TOKEN
 const fromNumber = process.env.TWILIO_PHONE_NUMBER
 const client = twilio(accountSid, authToken)
 
-exports.handler = async function(event) {
+export const handler = async function(event) {
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
