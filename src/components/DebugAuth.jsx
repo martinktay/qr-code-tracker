@@ -137,7 +137,7 @@ const DebugAuth = () => {
       <div className="mt-6 flex gap-4">
         <button 
           onClick={fetchDatabaseStats}
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                      className="bg-primary text-primary-foreground px-4 py-2 rounded hover:bg-primary/90"
         >
           Refresh Database Stats
         </button>

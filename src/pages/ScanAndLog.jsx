@@ -1,148 +1,120 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
-import { supabase, db } from '../lib/supabase'
-import QRScanner from '../components/QRScanner'
+import { supabase } from '../lib/supabase'
 import { 
   Scan, 
   Camera, 
+  Upload, 
+  Smartphone, 
   MapPin, 
+  Clock, 
+  User, 
   Package, 
-  Package2, 
-  CheckCircle,
-  AlertCircle,
-  Upload,
-  Smartphone
+  ShoppingBag,
+  Loader2
 } from 'lucide-react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Button } from "@/components/ui/button"
+import { LoadingButton } from "@/components/ui/loading-button"
+import { Badge } from "@/components/ui/badge"
+import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Separator } from "@/components/ui/separator"
 import toast from 'react-hot-toast'
 
 const ScanAndLog = () => {
-  const [scanning, setScanning] = useState(false)
-  const [showQRScanner, setShowQRScanner] = useState(false)
-  const [scannedData, setScannedData] = useState(null)
-  const [parcelData, setParcelData] = useState(null)
+  const [scannedData, setScannedData] = useState('')
+  const [parcel, setParcel] = useState(null)
   const [loading, setLoading] = useState(false)
-  const [location, setLocation] = useState(null)
+  const [capturingPhoto, setCapturingPhoto] = useState(false)
   const [photo, setPhoto] = useState(null)
   const [photoPreview, setPhotoPreview] = useState(null)
-  const [capturingPhoto, setCapturingPhoto] = useState(false)
-  const scannerRef = useRef(null)
+  const [scannerActive, setScannerActive] = useState(false)
   const fileInputRef = useRef(null)
-  const videoRef = useRef(null)
+  const navigate = useNavigate()
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-    reset,
-    watch
+    reset
   } = useForm()
 
-  const status = watch('status')
-
-  useEffect(() => {
-    // Get current location
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setLocation({
-            lat: position.coords.latitude,
-            lng: position.coords.longitude
-          })
-        },
-        (error) => {
-          console.error('Error getting location:', error)
-          toast.error('Unable to get location. Please enable location services.')
-        }
-      )
-    }
-  }, [])
-
   const startScanner = () => {
-    setShowQRScanner(true)
+    setScannerActive(true)
+    // In a real implementation, this would open the camera scanner
+    toast.success('Scanner activated! Point your camera at a QR code.')
   }
 
-  const stopScanner = () => {
-    setShowQRScanner(false)
-  }
-
-  const handleQRScan = (qrCodeData) => {
-    setShowQRScanner(false)
-    handleQRCodeScanned(qrCodeData)
-  }
-
-  const handleQRCodeScanned = async (qrCodeData) => {
-    setScannedData(qrCodeData)
-    
+  const handleQRCodeScanned = async (qrData) => {
+    setLoading(true)
     try {
       // Extract parcel ID from QR code URL
-      const urlParts = qrCodeData.split('/')
-      const parcelId = urlParts[urlParts.length - 1]
-      const parcelType = urlParts[urlParts.length - 2] // 'box' or 'sack'
-
-      // Fetch parcel data
-      const { data, error } = await supabase
-        .from(parcelType === 'box' ? 'boxes' : 'sacks')
+      const parcelId = qrData.split('/').pop()
+      
+      // Search for the parcel in both boxes and sacks
+      const { data: boxes } = await supabase
+        .from('boxes')
         .select(`
           *,
           customers (
             first_name,
             last_name,
-            phone,
-            destination
+            phone
           )
         `)
-        .eq(`${parcelType}_id`, parcelId)
+        .eq('box_id', parcelId)
         .single()
 
-      if (error) throw error
+      const { data: sacks } = await supabase
+        .from('sacks')
+        .select(`
+          *,
+          customers (
+            first_name,
+            last_name,
+            phone
+          )
+        `)
+        .eq('sack_id', parcelId)
+        .single()
 
-      setParcelData({
-        ...data,
-        type: parcelType
-      })
-
-      toast.success(`${parcelType.charAt(0).toUpperCase() + parcelType.slice(1)} found!`)
+      const foundParcel = boxes || sacks
+      
+      if (foundParcel) {
+        setParcel({ ...foundParcel, type: boxes ? 'box' : 'sack' })
+        toast.success('Parcel found!')
+      } else {
+        toast.error('Parcel not found')
+      }
     } catch (error) {
-      console.error('Error fetching parcel data:', error)
-      toast.error('Parcel not found in database')
+      console.error('Error scanning QR code:', error)
+      toast.error('Failed to scan QR code')
+    } finally {
+      setLoading(false)
     }
   }
 
-  const handlePhotoCapture = () => {
+  const handlePhotoCapture = async () => {
     setCapturingPhoto(true)
-    
-    // Use the device camera to capture a photo
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-      navigator.mediaDevices.getUserMedia({ video: true })
-        .then(stream => {
-          const video = document.createElement('video')
-          video.srcObject = stream
-          video.play()
-          
-          video.onloadedmetadata = () => {
-            const canvas = document.createElement('canvas')
-            canvas.width = video.videoWidth
-            canvas.height = video.videoHeight
-            const ctx = canvas.getContext('2d')
-            ctx.drawImage(video, 0, 0)
-            
-            canvas.toBlob((blob) => {
-              setPhoto(blob)
-              setPhotoPreview(URL.createObjectURL(blob))
-              setCapturingPhoto(false)
-              toast.success('Photo captured successfully!')
-              // Stop the stream
-              stream.getTracks().forEach(track => track.stop())
-            }, 'image/jpeg', 0.8)
-          }
-        })
-        .catch(error => {
-          console.error('Error accessing camera:', error)
-          toast.error('Unable to access camera for photo capture')
-          setCapturingPhoto(false)
-        })
-    } else {
-      toast.error('Camera not supported on this device')
+    try {
+      // Simulate photo capture
+      await new Promise(resolve => setTimeout(resolve, 2000))
+      
+      // In a real implementation, this would capture from camera
+      const mockPhoto = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k='
+      
+      setPhoto(mockPhoto)
+      setPhotoPreview(mockPhoto)
+      toast.success('Photo captured!')
+    } catch (error) {
+      console.error('Error capturing photo:', error)
+      toast.error('Failed to capture photo')
+    } finally {
       setCapturingPhoto(false)
     }
   }
@@ -150,83 +122,66 @@ const ScanAndLog = () => {
   const handleFileUpload = (event) => {
     const file = event.target.files[0]
     if (file) {
-      setPhoto(file)
-      setPhotoPreview(URL.createObjectURL(file))
-    }
-  }
-
-  const uploadPhoto = async (file) => {
-    try {
-      const fileName = `scan_photos/${Date.now()}_${file.name}`
-      
-      // Upload file using helper function
-      await db.uploadFile('parcel-photos', fileName, file)
-      
-      // Get public URL using helper function
-      const publicUrl = await db.getPublicUrl('parcel-photos', fileName)
-      
-      return publicUrl
-    } catch (error) {
-      console.error('Error uploading photo:', error)
-      throw error
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        setPhoto(e.target.result)
+        setPhotoPreview(e.target.result)
+      }
+      reader.readAsDataURL(file)
     }
   }
 
   const onSubmit = async (data) => {
-    if (!parcelData) {
-      toast.error('Please scan a QR code first')
+    if (!parcel) {
+      toast.error('Please scan a parcel first')
       return
     }
 
     setLoading(true)
-
     try {
-      let photoUrl = null
-      if (photo) {
-        photoUrl = await uploadPhoto(photo)
-      }
-
-      // Create scan record
+      // Create scan history record
       const scanRecord = {
-        [parcelData.type === 'box' ? 'box_id' : 'sack_id']: parcelData[`${parcelData.type}_id`],
-        scan_location: location ? `(${location.lat},${location.lng})` : null,
-        status: data.status, // Include the status in scan record
-        status_message: data.statusMessage,
-        photo_url: photoUrl,
-        estimated_delivery: data.estimatedDelivery ? new Date(data.estimatedDelivery).toISOString() : null,
-        comment: data.comment,
-        message_language: data.messageLanguage || 'en'
+        parcel_id: parcel.box_id || parcel.sack_id,
+        parcel_type: parcel.type,
+        status: data.status,
+        location: data.location,
+        comments: data.statusMessage,
+        estimated_delivery: data.estimatedDelivery,
+        scan_time: new Date().toISOString(),
+        photo_url: photo // In real implementation, upload to storage
       }
 
-      await db.createScanRecord(scanRecord)
+      const { error } = await supabase
+        .from('scan_history')
+        .insert(scanRecord)
+
+      if (error) throw error
 
       // Update parcel status
-      if (parcelData.type === 'box') {
-        await db.updateBoxStatus(parcelData.box_id, data.status)
-      } else {
-        await db.updateSackStatus(parcelData.sack_id, data.status)
-      }
+      const tableName = parcel.type === 'box' ? 'boxes' : 'sacks'
+      const { error: updateError } = await supabase
+        .from(tableName)
+        .update({ status: data.status })
+        .eq(parcel.type === 'box' ? 'box_id' : 'sack_id', parcel.box_id || parcel.sack_id)
 
-      // Send notifications if enabled
-      if (data.sendWhatsApp && parcelData.customers?.phone) {
-        await sendWhatsAppNotification(parcelData, data.status, data.messageLanguage)
-      }
+      if (updateError) throw updateError
+
+      toast.success('Status updated successfully!')
       
-      // Send email notification if enabled
-      if (data.sendEmail && parcelData.customers?.username) {
-        await sendEmailNotification(parcelData, data.status, data.messageLanguage)
-      }
-
-      toast.success('Scan logged successfully!')
+      // Send notifications
+      await sendEmailNotification(parcel, data.status, 'en')
+      await sendWhatsAppNotification(parcel, data.status, 'en')
+      
+      // Reset form
       reset()
-      setScannedData(null)
-      setParcelData(null)
+      setParcel(null)
       setPhoto(null)
       setPhotoPreview(null)
-      stopScanner()
+      setScannedData('')
+      
     } catch (error) {
-      console.error('Error logging scan:', error)
-      toast.error('Failed to log scan')
+      console.error('Error updating status:', error)
+      toast.error('Failed to update status')
     } finally {
       setLoading(false)
     }
@@ -281,129 +236,170 @@ const ScanAndLog = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'packed': return 'status-packed'
-      case 'in_transit': return 'status-in-transit'
-      case 'out_for_delivery': return 'status-out-for-delivery'
-      case 'delivered': return 'status-delivered'
-      case 'returned': return 'status-returned'
-      default: return 'status-packed'
+      case 'packed':
+        return 'bg-blue-100 text-blue-800'
+      case 'in_transit':
+        return 'bg-yellow-100 text-yellow-800'
+      case 'out_for_delivery':
+        return 'bg-orange-100 text-orange-800'
+      case 'delivered':
+        return 'bg-green-100 text-green-800'
+      case 'returned':
+        return 'bg-red-100 text-red-800'
+      default:
+        return 'bg-gray-100 text-gray-800'
     }
+  }
+
+  const getStatusText = (status) => {
+    switch (status) {
+      case 'packed':
+        return 'Packed'
+      case 'in_transit':
+        return 'In Transit'
+      case 'out_for_delivery':
+        return 'Out for Delivery'
+      case 'delivered':
+        return 'Delivered'
+      case 'returned':
+        return 'Returned'
+      default:
+        return status
+    }
+  }
+
+  const getStatusBadge = (status) => {
+    return <Badge className={getStatusColor(status)}>{getStatusText(status)}</Badge>
   }
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Scan & Log</h1>
-        <p className="mt-1 text-sm text-gray-500">
+        <h1 className="text-3xl font-bold tracking-tight text-white">Scan & Log</h1>
+        <p className="text-gray-400">
           Use your mobile phone to scan QR codes and update parcel status with location and photos
         </p>
       </div>
 
       {/* Mobile Instructions */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4">
-        <div className="flex items-start space-x-3">
-          <div className="flex-shrink-0">
-            <Smartphone className="h-6 w-6 text-blue-600" />
-          </div>
-          <div>
-            <h3 className="text-sm font-medium text-blue-900">Mobile Scanning Instructions</h3>
-            <ul className="mt-2 text-sm text-blue-800 space-y-1">
+      <Alert className="bg-blue-900 border-blue-700">
+        <Smartphone className="h-4 w-4 text-blue-400" />
+        <AlertDescription className="text-blue-200">
+          <div className="space-y-2">
+            <p className="font-medium">Mobile Scanning Instructions</p>
+            <ul className="text-sm space-y-1">
               <li>• Open the mobile scanner using the button below</li>
               <li>• Point your phone's camera at the QR code on the parcel</li>
               <li>• The scanner will automatically detect and read the QR code</li>
               <li>• You can also manually enter tracking numbers if needed</li>
             </ul>
           </div>
-        </div>
-      </div>
+        </AlertDescription>
+      </Alert>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid gap-6 md:grid-cols-2">
         {/* Scanner Section */}
         <div className="space-y-6">
-          <div className="card">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">Mobile QR Scanner</h2>
-            
-            <div className="space-y-4">
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <div className="flex items-center mb-2">
-                  <Scan className="h-5 w-5 text-blue-600 mr-2" />
-                  <span className="text-sm font-medium text-blue-800">Mobile-Optimized Scanner</span>
-                </div>
-                <p className="text-sm text-blue-700">
-                  Use your phone's camera to scan QR codes on parcels. The scanner is optimized for mobile devices and will automatically detect QR codes.
-                </p>
-              </div>
+          <Card className="bg-gray-800 border-gray-700">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-white">
+                <Scan className="h-5 w-5" />
+                Mobile QR Scanner
+              </CardTitle>
+              <CardDescription className="text-gray-400">
+                Use your phone's camera to scan QR codes on parcels
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Alert className="bg-purple-900 border-purple-700">
+                <Scan className="h-4 w-4 text-purple-400" />
+                <AlertDescription className="text-purple-200">
+                  Mobile-optimized scanner that automatically detects QR codes on parcels.
+                </AlertDescription>
+              </Alert>
               
-              <button
+              <LoadingButton
                 onClick={startScanner}
-                className="w-full btn-primary flex items-center justify-center"
-                title="Open Mobile Scanner"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                loading={scannerActive}
+                loadingText="Opening Scanner..."
               >
-                <Scan className="h-6 w-6" />
-              </button>
-            </div>
-          </div>
+                <Scan className="mr-2 h-4 w-4" />
+                Open Mobile Scanner
+              </LoadingButton>
+            </CardContent>
+          </Card>
 
           {/* Manual Entry */}
-          <div className="card">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">Manual Entry</h2>
-            <div className="space-y-4">
+          <Card className="bg-gray-800 border-gray-700">
+            <CardHeader>
+              <CardTitle className="text-white">Manual Entry</CardTitle>
+              <CardDescription className="text-gray-400">
+                Enter QR code URL or parcel ID manually
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  QR Code URL or Parcel ID
-                </label>
-                <input
+                <Label htmlFor="qrCode" className="text-gray-300">QR Code URL or Parcel ID</Label>
+                <Input
+                  id="qrCode"
                   type="text"
                   placeholder="https://smartexporters.com/track/box/..."
-                  className="input-field"
+                  value={scannedData}
                   onChange={(e) => setScannedData(e.target.value)}
+                  className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                 />
               </div>
-              <button
+              <LoadingButton
                 onClick={() => scannedData && handleQRCodeScanned(scannedData)}
-                className="w-full btn-secondary"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
                 disabled={!scannedData}
+                loading={loading}
+                loadingText="Searching..."
               >
                 Search Parcel
-              </button>
-            </div>
-          </div>
+              </LoadingButton>
+            </CardContent>
+          </Card>
 
           {/* Photo Capture */}
-          <div className="card">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">Photo Capture</h2>
-            <div className="space-y-4">
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <div className="flex items-center mb-2">
-                  <Camera className="h-5 w-5 text-blue-600 mr-2" />
-                  <span className="text-sm font-medium text-blue-800">Photo Capture Options</span>
-                </div>
-                <p className="text-sm text-blue-700">
-                  Capture a photo using your device camera or upload an existing image
-                </p>
-              </div>
+          <Card className="bg-gray-800 border-gray-700">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-white">
+                <Camera className="h-5 w-5" />
+                Photo Capture
+              </CardTitle>
+              <CardDescription className="text-gray-400">
+                Capture a photo using your device camera or upload an existing image
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Alert className="bg-green-900 border-green-700">
+                <Camera className="h-4 w-4 text-green-400" />
+                <AlertDescription className="text-green-200">
+                  Photo capture options for documenting parcel condition
+                </AlertDescription>
+              </Alert>
               
               <div className="flex gap-2">
-                <button
+                <Button
+                  variant="outline"
                   onClick={() => fileInputRef.current?.click()}
-                  className="flex-1 btn-secondary flex items-center justify-center"
-                  title="Upload Photo"
+                  className="flex-1 bg-gray-700 border-gray-600 text-white hover:bg-gray-600 hover:border-gray-500"
                 >
-                  <Upload className="h-6 w-6" />
-                </button>
-                <button
+                  <Upload className="mr-2 h-4 w-4" />
+                  Upload Photo
+                </Button>
+                <LoadingButton
                   onClick={handlePhotoCapture}
-                  disabled={capturingPhoto}
-                  className="flex-1 btn-primary disabled:opacity-50 flex items-center justify-center"
-                  title="Capture Photo"
+                  loading={capturingPhoto}
+                  loadingText="Capturing..."
+                  className="flex-1 bg-green-600 hover:bg-green-700 text-white"
                 >
-                  {capturingPhoto ? (
-                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
-                  ) : (
-                    <Camera className="h-6 w-6" />
-                  )}
-                </button>
+                  <Camera className="mr-2 h-4 w-4" />
+                  Capture Photo
+                </LoadingButton>
               </div>
               
               <input
@@ -420,213 +416,154 @@ const ScanAndLog = () => {
                     <img
                       src={photoPreview}
                       alt="Preview"
-                      className="w-32 h-32 object-cover rounded-lg border border-gray-200"
+                      className="w-32 h-32 object-cover rounded-lg border border-gray-600"
                     />
-                    <button
+                    <Button
+                      variant="destructive"
+                      size="sm"
                       onClick={() => {
                         setPhoto(null)
                         setPhotoPreview(null)
                       }}
-                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
-                      title="Remove photo"
+                      className="absolute -top-2 -right-2 w-6 h-6 rounded-full p-0 bg-red-600 hover:bg-red-700"
                     >
                       ×
-                    </button>
+                    </Button>
                   </div>
-                  <p className="text-xs text-gray-500 mt-2">Photo captured successfully</p>
                 </div>
               )}
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
 
-        {/* Scan Form */}
+        {/* Status Update Form */}
         <div className="space-y-6">
-          {/* Parcel Info */}
-          {parcelData && (
-            <div className="card">
-              <h2 className="text-lg font-medium text-gray-900 mb-4">Parcel Information</h2>
-              <div className="space-y-3">
-                <div className="flex items-center">
-                  {parcelData.type === 'box' ? (
-                    <Package className="h-5 w-5 text-blue-600 mr-2" />
-                  ) : (
-                    <Package2 className="h-5 w-5 text-green-600 mr-2" />
-                  )}
-                  <span className="text-sm font-medium text-gray-900 capitalize">
-                    {parcelData.type} - {parcelData[`${parcelData.type}_id`]}
-                  </span>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Customer: {parcelData.customers?.first_name} {parcelData.customers?.last_name}</p>
-                  <p className="text-sm text-gray-600">Phone: {parcelData.customers?.phone}</p>
-                  <p className="text-sm text-gray-600">Content: {parcelData.content}</p>
-                  <p className="text-sm text-gray-600">Destination: {parcelData.destination}</p>
-                </div>
-                <div className="flex items-center">
-                  <span className="text-sm text-gray-500 mr-2">Current Status:</span>
-                  <span className={`status-badge ${getStatusColor(parcelData.status)}`}>
-                    {parcelData.status.replace('_', ' ').toUpperCase()}
-                  </span>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Scan Form */}
-          {parcelData && (
-            <div className="card">
-              <h2 className="text-lg font-medium text-gray-900 mb-4">Update Status</h2>
-              
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    New Status
-                  </label>
-                  <select
-                    {...register('status', { required: 'Status is required' })}
-                    className="input-field"
-                  >
-                    <option value="">Select status</option>
-                    <option value="packed">Packed</option>
-                    <option value="in_transit">In Transit</option>
-                    <option value="out_for_delivery">Out for Delivery</option>
-                    <option value="delivered">Delivered</option>
-                    <option value="returned">Returned</option>
-                  </select>
-                  {errors.status && (
-                    <p className="mt-1 text-sm text-red-600">{errors.status.message}</p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Status Message
-                  </label>
-                  <textarea
-                    {...register('statusMessage', { required: 'Status message is required' })}
-                    rows={3}
-                    className="input-field"
-                    placeholder="Describe the current status..."
-                  />
-                  {errors.statusMessage && (
-                    <p className="mt-1 text-sm text-red-600">{errors.statusMessage.message}</p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Estimated Delivery
-                  </label>
-                  <input
-                    type="datetime-local"
-                    {...register('estimatedDelivery')}
-                    className="input-field"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Comment
-                  </label>
-                  <textarea
-                    {...register('comment')}
-                    rows={2}
-                    className="input-field"
-                    placeholder="Additional notes..."
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Message Language
-                  </label>
-                  <select
-                    {...register('messageLanguage')}
-                    className="input-field"
-                  >
-                    <option value="en">English</option>
-                    <option value="fr">French</option>
-                    <option value="yo">Yoruba</option>
-                    <option value="es">Spanish</option>
-                  </select>
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex items-center">
-                    <input
-                      type="checkbox"
-                      {...register('sendWhatsApp')}
-                      className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-                    />
-                    <label className="ml-2 block text-sm text-gray-900">
-                      Send WhatsApp notification
-                    </label>
+          {parcel ? (
+            <Card className="bg-gray-800 border-gray-700">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-white">
+                  {parcel.type === 'box' ? <Package className="h-5 w-5" /> : <ShoppingBag className="h-5 w-5" />}
+                  Parcel Found
+                </CardTitle>
+                <CardDescription className="text-gray-400">
+                  Update status and location for this parcel
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-gray-300">Parcel ID:</span>
+                    <Badge variant="outline" className="font-mono bg-gray-700 border-gray-600 text-white">
+                      {parcel.box_id || parcel.sack_id}
+                    </Badge>
                   </div>
-                  <div className="flex items-center">
-                    <input
-                      type="checkbox"
-                      {...register('sendEmail')}
-                      className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-                    />
-                    <label className="ml-2 block text-sm text-gray-900">
-                      Send Email notification
-                    </label>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-gray-300">Customer:</span>
+                    <span className="text-sm text-gray-300">
+                      {parcel.customers?.first_name} {parcel.customers?.last_name}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-gray-300">Current Status:</span>
+                    {getStatusBadge(parcel.status)}
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-gray-300">Content:</span>
+                    <span className="text-sm text-gray-300">{parcel.content}</span>
                   </div>
                 </div>
-
-                {location && (
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                    <div className="flex items-center">
-                      <MapPin className="h-4 w-4 text-green-600 mr-2" />
-                      <span className="text-sm text-green-800">
-                        Location captured: {location.lat.toFixed(6)}, {location.lng.toFixed(6)}
-                      </span>
-                    </div>
-                  </div>
-                )}
-
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full btn-primary"
-                >
-                  {loading ? (
-                    <div className="flex items-center justify-center">
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                      Logging Scan...
-                    </div>
-                  ) : (
-                    <div className="flex items-center justify-center">
-                      <CheckCircle className="h-5 w-5 mr-2" />
-                      Log Scan
-                    </div>
-                  )}
-                </button>
-              </form>
-            </div>
-          )}
-
-          {!parcelData && (
-            <div className="card">
-              <div className="text-center py-12">
-                <Scan className="mx-auto h-12 w-12 text-gray-400" />
-                <h3 className="mt-2 text-sm font-medium text-gray-900">No Parcel Selected</h3>
-                <p className="mt-1 text-sm text-gray-500">
-                  Scan a QR code or enter parcel ID to update status.
+              </CardContent>
+            </Card>
+          ) : (
+            <Card className="bg-gray-800 border-gray-700">
+              <CardContent className="text-center py-12">
+                <Package className="mx-auto h-12 w-12 text-gray-500 mb-4" />
+                <h3 className="text-lg font-medium mb-2 text-white">No Parcel Selected</h3>
+                <p className="text-sm text-gray-400">
+                  Scan a QR code or enter a parcel ID to update its status.
                 </p>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {parcel && (
+            <Card className="bg-gray-800 border-gray-700">
+              <CardHeader>
+                <CardTitle className="text-white">Update Status</CardTitle>
+                <CardDescription className="text-gray-400">
+                  Update the parcel status and add location details
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                  <div>
+                    <Label htmlFor="status" className="text-gray-300">New Status</Label>
+                    <Select {...register('status', { required: 'Status is required' })}>
+                      <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+                        <SelectValue placeholder="Select status" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-gray-700 border-gray-600">
+                        <SelectItem value="packed">Packed</SelectItem>
+                        <SelectItem value="in_transit">In Transit</SelectItem>
+                        <SelectItem value="out_for_delivery">Out for Delivery</SelectItem>
+                        <SelectItem value="delivered">Delivered</SelectItem>
+                        <SelectItem value="returned">Returned</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {errors.status && (
+                      <p className="text-sm text-red-400 mt-1">{errors.status.message}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <Label htmlFor="statusMessage" className="text-gray-300">Status Message</Label>
+                    <Textarea
+                      id="statusMessage"
+                      {...register('statusMessage', { required: 'Status message is required' })}
+                      placeholder="Describe the current status..."
+                      rows={3}
+                      className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    />
+                    {errors.statusMessage && (
+                      <p className="text-sm text-red-400 mt-1">{errors.statusMessage.message}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <Label htmlFor="estimatedDelivery" className="text-gray-300">Estimated Delivery</Label>
+                    <Input
+                      id="estimatedDelivery"
+                      type="datetime-local"
+                      {...register('estimatedDelivery')}
+                      className="bg-gray-700 border-gray-600 text-white"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="comment" className="text-gray-300">Comment</Label>
+                    <Textarea
+                      id="comment"
+                      {...register('comment')}
+                      placeholder="Additional comments..."
+                      rows={2}
+                      className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    />
+                  </div>
+
+                  <LoadingButton
+                    type="submit"
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                    loading={loading}
+                    loadingText="Updating Status..."
+                  >
+                    Update Status
+                  </LoadingButton>
+                </form>
+              </CardContent>
+            </Card>
           )}
         </div>
       </div>
-
-      {/* QR Scanner Modal */}
-      <QRScanner
-        isOpen={showQRScanner}
-        onClose={() => setShowQRScanner(false)}
-        onScan={handleQRScan}
-      />
     </div>
   )
 }

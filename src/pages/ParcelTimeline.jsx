@@ -133,7 +133,7 @@ const ParcelTimeline = () => {
           ) : (
             <Link 
               to="/dashboard" 
-              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              className="inline-flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Dashboard
@@ -196,10 +196,10 @@ const ParcelTimeline = () => {
               
               {/* Chat button for authenticated customers */}
               {user && userRole === 'customer' && (
-                <button
-                  onClick={() => setShowChat(!showChat)}
-                  className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                >
+                            <button
+              onClick={() => setShowChat(!showChat)}
+              className="inline-flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+            >
                   <MessageSquare className="w-4 h-4 mr-2" />
                   {showChat ? 'Hide Chat' : 'Chat with Support'}
                 </button>

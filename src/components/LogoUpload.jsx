@@ -145,7 +145,7 @@ const LogoUpload = () => {
       <div
         className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
           dragOver
-            ? 'border-primary-500 bg-primary-50'
+                            ? 'border-primary bg-primary/5'
             : 'border-gray-300 hover:border-gray-400'
         }`}
         onDrop={handleDrop}
@@ -155,7 +155,7 @@ const LogoUpload = () => {
         <div className="space-y-4">
           <div className="flex justify-center">
             {uploading ? (
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+                             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
             ) : (
               <Image className="h-12 w-12 text-gray-400" />
             )}

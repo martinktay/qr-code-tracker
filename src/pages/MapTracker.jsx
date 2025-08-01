@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import { supabase, db } from '../lib/supabase'
-import { MapPin, Package, Package2, Filter, Search } from 'lucide-react'
+import { MapPin, Package, ShoppingBag, Filter, Search } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
+import { Badge } from '@/components/ui/badge'
 
 const MapTracker = () => {
   const [parcels, setParcels] = useState([])
@@ -37,12 +41,12 @@ const MapTracker = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'packed': return 'bg-blue-500'
-      case 'in_transit': return 'bg-yellow-500'
-      case 'out_for_delivery': return 'bg-orange-500'
-      case 'delivered': return 'bg-green-500'
-      case 'returned': return 'bg-red-500'
-      default: return 'bg-gray-500'
+      case 'packed': return 'bg-blue-600 text-white'
+      case 'in_transit': return 'bg-yellow-600 text-white'
+      case 'out_for_delivery': return 'bg-orange-600 text-white'
+      case 'delivered': return 'bg-green-600 text-white'
+      case 'returned': return 'bg-red-600 text-white'
+      default: return 'bg-gray-600 text-white'
     }
   }
 
@@ -77,156 +81,257 @@ const MapTracker = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary-600"></div>
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Map Tracker</h1>
-        <p className="mt-1 text-sm text-gray-500">
-          View all parcels on a map with their current locations and status
-        </p>
-      </div>
-
-      {/* Filters and Search */}
-      <div className="card">
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex-1">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search by parcel ID, customer name, or destination..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="input-field pl-10"
-              />
-            </div>
+    <div className="space-y-10">
+      {/* Header Section */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-gray-800 rounded-xl border border-gray-700">
+            <MapPin className="h-10 w-10 text-cyan-400" />
           </div>
-          <div className="flex items-center gap-2">
-            <Filter className="h-4 w-4 text-gray-400" />
-            <select
-              value={filter}
-              onChange={(e) => setFilter(e.target.value)}
-              className="input-field"
-            >
-              <option value="all">All Status</option>
-              <option value="packed">Packed</option>
-              <option value="in_transit">In Transit</option>
-              <option value="out_for_delivery">Out for Delivery</option>
-              <option value="delivered">Delivered</option>
-              <option value="returned">Returned</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      {/* Map Placeholder */}
-      <div className="card">
-        <div className="bg-gray-100 rounded-lg h-96 flex items-center justify-center">
-          <div className="text-center">
-            <MapPin className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Interactive Map</h3>
-            <p className="text-sm text-gray-500 mb-4">
-              This would integrate with Leaflet or Google Maps to show parcel locations
+          <div>
+            <h1 className="text-4xl font-bold text-white mb-2">Map Tracker</h1>
+            <p className="text-gray-400 text-xl">
+              View all parcels on a map with their current locations and status
             </p>
-            <div className="text-xs text-gray-400">
-              Map integration requires API keys and additional setup
-            </div>
           </div>
         </div>
       </div>
 
-      {/* Parcel List */}
-      <div className="card">
-        <h2 className="text-lg font-medium text-gray-900 mb-4">
-          Parcels ({filteredParcels.length})
-        </h2>
+      {/* Filters and Search Section */}
+      <Card className="bg-gray-800 border-gray-700 shadow-xl">
+        <CardHeader className="pb-8">
+          <div className="flex items-center gap-6">
+            <div className="p-4 bg-purple-900 rounded-xl">
+              <Filter className="h-8 w-8 text-purple-400" />
+            </div>
+            <div className="space-y-2">
+              <CardTitle className="text-white text-2xl">Filters & Search</CardTitle>
+              <p className="text-gray-400 text-lg">Refine your parcel search and filtering options</p>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-8">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {/* Search Input */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-300">Search Parcels</label>
+              <div className="relative">
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <Input
+                  type="text"
+                  placeholder="Search parcels, customers, or destinations..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-12 h-12 bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-purple-500 focus:ring-purple-500"
+                />
+              </div>
+            </div>
+
+            {/* Status Filter */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-300">Filter by Status</label>
+              <Select value={filter} onValueChange={setFilter}>
+                <SelectTrigger className="h-12 bg-gray-700 border-gray-600 text-white focus:border-purple-500 focus:ring-purple-500">
+                  <SelectValue placeholder="Select status filter" />
+                </SelectTrigger>
+                <SelectContent className="bg-gray-700 border-gray-600">
+                  <SelectItem value="all" className="text-white hover:bg-gray-600">All Statuses</SelectItem>
+                  <SelectItem value="packed" className="text-white hover:bg-gray-600">Packed</SelectItem>
+                  <SelectItem value="in_transit" className="text-white hover:bg-gray-600">In Transit</SelectItem>
+                  <SelectItem value="out_for_delivery" className="text-white hover:bg-gray-600">Out for Delivery</SelectItem>
+                  <SelectItem value="delivered" className="text-white hover:bg-gray-600">Delivered</SelectItem>
+                  <SelectItem value="returned" className="text-white hover:bg-gray-600">Returned</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Results Count */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-300">Results</label>
+              <div className="flex items-center justify-center h-12 p-4 bg-gray-700 rounded-lg border border-gray-600">
+                <span className="text-white font-semibold">
+                  {filteredParcels.length} parcel{filteredParcels.length !== 1 ? 's' : ''} found
+                </span>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Interactive Map Section */}
+      <Card className="bg-gray-800 border-gray-700 shadow-xl">
+        <CardHeader className="pb-6">
+          <div className="flex items-center gap-6">
+            <div className="p-4 bg-cyan-900 rounded-xl">
+              <MapPin className="h-8 w-8 text-cyan-400" />
+            </div>
+            <div className="space-y-2">
+              <CardTitle className="text-white text-2xl">Interactive Map</CardTitle>
+              <p className="text-gray-400 text-lg">View all parcels on an interactive map with real-time locations</p>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="bg-gray-700 rounded-xl border-2 border-dashed border-gray-600 p-12 text-center min-h-[400px] flex flex-col items-center justify-center">
+            <div className="p-6 bg-gray-600 rounded-full w-24 h-24 mx-auto mb-6 flex items-center justify-center">
+              <MapPin className="h-12 w-12 text-gray-400" />
+            </div>
+            <h3 className="text-xl font-semibold text-gray-300 mb-3">
+              Interactive Map Coming Soon
+            </h3>
+            <p className="text-gray-400 text-lg max-w-md mx-auto mb-6">
+              This section will display an interactive map showing all parcels with their current locations, 
+              status indicators, and real-time tracking information.
+            </p>
+            <div className="flex items-center justify-center gap-4 text-sm text-gray-500">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-blue-600 rounded-full"></div>
+                <span>Packed</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-yellow-600 rounded-full"></div>
+                <span>In Transit</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-green-600 rounded-full"></div>
+                <span>Delivered</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-red-600 rounded-full"></div>
+                <span>Returned</span>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Parcels Grid */}
+      <div className="space-y-8">
+        <div className="flex items-center justify-between">
+          <h2 className="text-3xl font-bold text-white">Parcel Overview</h2>
+          <div className="text-gray-400 text-lg">
+            Showing {filteredParcels.length} of {parcels.length} total parcels
+          </div>
+        </div>
         
-        <div className="space-y-4">
-          {filteredParcels.length > 0 ? (
-            filteredParcels.map((parcel) => {
-              const latestLocation = getLatestLocation(parcel)
-              
-              return (
-                <div key={`${parcel.type}-${parcel[`${parcel.type}_id`]}`} className="border border-gray-200 rounded-lg p-4">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center mb-2">
-                        {parcel.type === 'box' ? (
-                          <Package className="h-5 w-5 text-blue-600 mr-2" />
-                        ) : (
-                          <Package2 className="h-5 w-5 text-green-600 mr-2" />
-                        )}
-                        <span className="text-sm font-medium text-gray-900">
-                          {parcel.type.charAt(0).toUpperCase() + parcel.type.slice(1)} ID: {parcel[`${parcel.type}_id`]}
-                        </span>
-                        <span className={`ml-2 inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(parcel.status)} text-white`}>
-                          {getStatusText(parcel.status)}
-                        </span>
-                      </div>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                        <div>
-                          <p className="text-gray-600">
-                            <strong>Customer:</strong> {parcel.customers?.first_name} {parcel.customers?.last_name}
-                          </p>
-                          <p className="text-gray-600">
-                            <strong>Phone:</strong> {parcel.customers?.phone}
-                          </p>
-                          <p className="text-gray-600">
-                            <strong>Content:</strong> {parcel.content}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-gray-600">
-                            <strong>Destination:</strong> {parcel.destination}
-                          </p>
-                          <p className="text-gray-600">
-                            <strong>Quantity:</strong> {parcel.quantity}
-                          </p>
-                          {latestLocation && (
-                            <p className="text-gray-600">
-                              <strong>Last Location:</strong> {latestLocation}
-                            </p>
-                          )}
-                        </div>
-                      </div>
+        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {filteredParcels.map((parcel, index) => (
+            <Card key={index} className="bg-gray-800 border-gray-700 hover:bg-gray-700 transition-all duration-300 shadow-lg hover:shadow-xl">
+              <CardHeader className="pb-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-gray-700 rounded-xl">
+                      {parcel.type === 'box' ? (
+                        <Package className="h-7 w-7 text-blue-400" />
+                      ) : (
+                        <ShoppingBag className="h-7 w-7 text-green-400" />
+                      )}
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-base font-medium text-gray-300">
+                        {parcel.type === 'box' ? 'Box' : 'Sack'}
+                      </span>
+                      <p className="text-sm text-gray-500">
+                        ID: {parcel[`${parcel.type}_id`]?.slice(-8)}
+                      </p>
                     </div>
                   </div>
+                  <Badge className={`${getStatusColor(parcel.status)} text-white font-medium px-4 py-2`}>
+                    {getStatusText(parcel.status)}
+                  </Badge>
                 </div>
-              )
-            })
-          ) : (
-            <div className="text-center py-12">
-              <MapPin className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-2 text-sm font-medium text-gray-900">No parcels found</h3>
-              <p className="mt-1 text-sm text-gray-500">
-                Try adjusting your search or filter criteria.
-              </p>
-            </div>
-          )}
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Customer Info */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-3 h-3 bg-blue-400 rounded-full"></div>
+                    <p className="text-sm font-medium text-gray-400 uppercase tracking-wide">Customer</p>
+                  </div>
+                  <p className="text-base font-semibold text-white">
+                    {parcel.customers?.first_name} {parcel.customers?.last_name}
+                  </p>
+                  <p className="text-sm text-gray-400">
+                    {parcel.customers?.phone || 'No phone'}
+                  </p>
+                </div>
+
+                {/* Content */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-3 h-3 bg-green-400 rounded-full"></div>
+                    <p className="text-sm font-medium text-gray-400 uppercase tracking-wide">Content</p>
+                  </div>
+                  <p className="text-base text-white">
+                    {parcel.content || 'No description'}
+                  </p>
+                </div>
+
+                {/* Destination */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-3 h-3 bg-purple-400 rounded-full"></div>
+                    <p className="text-sm font-medium text-gray-400 uppercase tracking-wide">Destination</p>
+                  </div>
+                  <p className="text-base text-white">
+                    {parcel.destination || 'Not specified'}
+                  </p>
+                </div>
+
+                {/* Quantity */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-3 h-3 bg-orange-400 rounded-full"></div>
+                    <p className="text-sm font-medium text-gray-400 uppercase tracking-wide">Quantity</p>
+                  </div>
+                  <p className="text-base text-white">
+                    {parcel.quantity || 1}
+                  </p>
+                </div>
+
+                {/* Latest Location */}
+                {getLatestLocation(parcel) && (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-3 h-3 bg-cyan-400 rounded-full"></div>
+                      <p className="text-sm font-medium text-gray-400 uppercase tracking-wide">Last Location</p>
+                    </div>
+                    <p className="text-base text-cyan-400 font-medium">
+                      {getLatestLocation(parcel)}
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </div>
 
-      {/* Map Integration Instructions */}
-      <div className="card">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Map Integration Setup</h3>
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <h4 className="text-sm font-medium text-blue-900 mb-2">To enable interactive maps:</h4>
-          <ul className="text-xs text-blue-800 space-y-1">
-            <li>• Install Leaflet: <code>npm install leaflet react-leaflet</code></li>
-            <li>• Add map container and markers for each parcel</li>
-            <li>• Parse GPS coordinates from scan_location data</li>
-            <li>• Add popups with parcel information</li>
-            <li>• Implement clustering for multiple parcels in same area</li>
-          </ul>
-        </div>
-      </div>
+      {/* Empty State */}
+      {filteredParcels.length === 0 && (
+        <Card className="bg-gray-800 border-gray-700 shadow-xl">
+          <CardContent className="text-center py-20">
+            <div className="p-6 bg-gray-700 rounded-full w-24 h-24 mx-auto mb-8 flex items-center justify-center">
+              <Package className="h-12 w-12 text-gray-500" />
+            </div>
+            <h3 className="text-2xl font-semibold text-gray-300 mb-4">
+              No parcels found
+            </h3>
+            <p className="text-gray-400 text-lg max-w-md mx-auto">
+              {searchTerm || filter !== 'all' 
+                ? 'Try adjusting your search or filter criteria to find matching parcels.'
+                : 'No parcels are currently in the system. Start by registering some parcels.'
+              }
+            </p>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

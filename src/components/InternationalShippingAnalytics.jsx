@@ -6,7 +6,7 @@ import {
   Ship, 
   Truck, 
   Package, 
-  Package2,
+  ShoppingBag,
   TrendingUp,
   AlertCircle,
   CheckCircle,
@@ -17,6 +17,9 @@ import {
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 const InternationalShippingAnalytics = () => {
   const [analytics, setAnalytics] = useState({
@@ -198,13 +201,13 @@ const InternationalShippingAnalytics = () => {
 
   const getStatusColor = (status) => {
     const colors = {
-      'packed': 'text-blue-600 bg-blue-50',
-      'in_transit': 'text-yellow-600 bg-yellow-50',
-      'out_for_delivery': 'text-orange-600 bg-orange-50',
-      'delivered': 'text-green-600 bg-green-50',
-      'returned': 'text-red-600 bg-red-50'
+      'packed': 'text-white bg-blue-600',
+      'in_transit': 'text-white bg-yellow-600',
+      'out_for_delivery': 'text-white bg-orange-600',
+      'delivered': 'text-white bg-green-600',
+      'returned': 'text-white bg-red-600'
     };
-    return colors[status] || 'text-gray-600 bg-gray-50';
+    return colors[status] || 'text-white bg-gray-600';
   };
 
   const getStatusText = (status) => {
@@ -218,14 +221,38 @@ const InternationalShippingAnalytics = () => {
     return statusMap[status] || status;
   };
 
+  // Currency conversion rates (example rates)
+  const currencyRates = {
+    NGN: 1,
+    USD: 0.0022, // 1 NGN = 0.0022 USD
+    EUR: 0.0020, // 1 NGN = 0.0020 EUR
+    GBP: 0.0017  // 1 NGN = 0.0017 GBP
+  };
+
+  const formatCurrency = (amount, currency) => {
+    const convertedAmount = amount * currencyRates[currency];
+    const symbols = {
+      NGN: '₦',
+      USD: '$',
+      EUR: '€',
+      GBP: '£'
+    };
+    return `${symbols[currency]}${convertedAmount.toLocaleString(undefined, { 
+      minimumFractionDigits: 2, 
+      maximumFractionDigits: 2 
+    })}`;
+  };
+
   if (loading) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading international shipping analytics...</p>
-        </div>
-      </div>
+      <Card className="bg-gray-800 border-gray-700">
+        <CardContent className="p-6">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
+            <p className="text-gray-300">Loading international shipping analytics...</p>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
@@ -233,8 +260,8 @@ const InternationalShippingAnalytics = () => {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-gray-900">International Shipping Analytics</h2>
-        <div className="flex items-center space-x-2 text-sm text-gray-500">
+        <h2 className="text-lg font-semibold text-white">International Shipping Analytics</h2>
+        <div className="flex items-center space-x-2 text-sm text-gray-400">
           <Globe className="w-4 h-4" />
           <span>Nigeria → Global</span>
         </div>
@@ -242,159 +269,176 @@ const InternationalShippingAnalytics = () => {
 
       {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white p-4 rounded-lg shadow border">
-          <div className="flex items-center">
-            <Package className="h-8 w-8 text-blue-600" />
-            <div className="ml-3">
-              <p className="text-sm font-medium text-gray-500">Total Shipments</p>
-              <p className="text-2xl font-bold text-gray-900">{analytics.totalShipments}</p>
+        <Card className="bg-gray-800 border-gray-700">
+          <CardContent className="p-4">
+            <div className="flex items-center">
+              <Package className="h-8 w-8 text-blue-400" />
+              <div className="ml-3">
+                <p className="text-sm font-medium text-gray-400">Total Shipments</p>
+                <p className="text-2xl font-bold text-white">{analytics.totalShipments}</p>
+              </div>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
         
-        <div className="bg-white p-4 rounded-lg shadow border">
-          <div className="flex items-center">
-            <TrendingUp className="h-8 w-8 text-green-600" />
-            <div className="ml-3">
-              <p className="text-sm font-medium text-gray-500">Total Weight</p>
-              <p className="text-2xl font-bold text-gray-900">{analytics.totalWeight.toFixed(1)} kg</p>
+        <Card className="bg-gray-800 border-gray-700">
+          <CardContent className="p-4">
+            <div className="flex items-center">
+              <TrendingUp className="h-8 w-8 text-green-400" />
+              <div className="ml-3">
+                <p className="text-sm font-medium text-gray-400">Total Weight</p>
+                <p className="text-2xl font-bold text-white">{analytics.totalWeight.toFixed(1)} kg</p>
+              </div>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
         
-        <div className="bg-white p-4 rounded-lg shadow border">
-          <div className="flex items-center">
-            <DollarSign className="h-8 w-8 text-purple-600" />
-            <div className="ml-3">
-              <p className="text-sm font-medium text-gray-500">Total Revenue</p>
-              <p className="text-2xl font-bold text-gray-900">₦{analytics.totalRevenue.toLocaleString()}</p>
+        <Card className="bg-gray-800 border-gray-700">
+          <CardContent className="p-4">
+            <div className="flex items-center">
+              <TrendingUp className="h-8 w-8 text-green-400" />
+              <div className="ml-3">
+                <p className="text-sm font-medium text-gray-400">Total Revenue</p>
+                <p className="text-2xl font-bold text-white">{formatCurrency(analytics.totalRevenue, 'NGN')}</p>
+                <div className="flex flex-wrap gap-1 mt-1">
+                  <span className="text-xs text-emerald-400 font-medium">{formatCurrency(analytics.totalRevenue, 'USD')}</span>
+                  <span className="text-xs text-gray-400">•</span>
+                  <span className="text-xs text-emerald-400 font-medium">{formatCurrency(analytics.totalRevenue, 'EUR')}</span>
+                  <span className="text-xs text-gray-400">•</span>
+                  <span className="text-xs text-emerald-400 font-medium">{formatCurrency(analytics.totalRevenue, 'GBP')}</span>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
         
-        <div className="bg-white p-4 rounded-lg shadow border">
-          <div className="flex items-center">
-            <Users className="h-8 w-8 text-indigo-600" />
-            <div className="ml-3">
-              <p className="text-sm font-medium text-gray-500">Active Customers</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {new Set(analytics.recentShipments.map(s => s.customer)).size}
-              </p>
+        <Card className="bg-gray-800 border-gray-700">
+          <CardContent className="p-4">
+            <div className="flex items-center">
+              <Users className="h-8 w-8 text-indigo-400" />
+              <div className="ml-3">
+                <p className="text-sm font-medium text-gray-400">Active Customers</p>
+                <p className="text-2xl font-bold text-white">
+                  {new Set(analytics.recentShipments.map(s => s.customer)).size}
+                </p>
+              </div>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Regional Breakdown */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Shipments by Region */}
-        <div className="bg-white p-6 rounded-lg shadow border">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Shipments by Region</h3>
-          <div className="space-y-3">
-            {Object.entries(analytics.shipmentsByRegion).map(([region, count]) => (
-              <div key={region} className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <MapPin className="w-4 h-4 text-gray-500 mr-2" />
-                  <span className="text-sm font-medium text-gray-900">{region}</span>
+        <Card className="bg-gray-800 border-gray-700">
+          <CardHeader>
+            <CardTitle className="text-lg text-white">Shipments by Region</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {Object.entries(analytics.shipmentsByRegion).map(([region, count]) => (
+                <div key={region} className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <MapPin className="w-4 h-4 text-gray-400 mr-2" />
+                    <span className="text-sm font-medium text-white">{region}</span>
+                  </div>
+                  <Badge variant="outline" className="bg-gray-700 border-gray-600 text-white">
+                    {count}
+                  </Badge>
                 </div>
-                <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${getRegionColor(region)}`}>
-                  {count}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Shipping Methods */}
-        <div className="bg-white p-6 rounded-lg shadow border">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Shipping Methods</h3>
-          <div className="space-y-3">
-            {Object.entries(analytics.shipmentsByMethod).map(([method, count]) => (
-              <div key={method} className="flex items-center justify-between">
-                <div className="flex items-center">
-                  {method === 'Air' && <Plane className="w-4 h-4 text-gray-500 mr-2" />}
-                  {method === 'Sea' && <Ship className="w-4 h-4 text-gray-500 mr-2" />}
-                  {method === 'Land' && <Truck className="w-4 h-4 text-gray-500 mr-2" />}
-                  {method === 'Mixed' && <Package className="w-4 h-4 text-gray-500 mr-2" />}
-                  <span className="text-sm font-medium text-gray-900">{method}</span>
+        <Card className="bg-gray-800 border-gray-700">
+          <CardHeader>
+            <CardTitle className="text-lg text-white">Shipping Methods</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {Object.entries(analytics.shipmentsByMethod).map(([method, count]) => (
+                <div key={method} className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    {method === 'Air' && <Plane className="w-4 h-4 text-gray-400 mr-2" />}
+                    {method === 'Sea' && <Ship className="w-4 h-4 text-gray-400 mr-2" />}
+                    {method === 'Land' && <Truck className="w-4 h-4 text-gray-400 mr-2" />}
+                    {method === 'Mixed' && <Package className="w-4 h-4 text-gray-400 mr-2" />}
+                    <span className="text-sm font-medium text-white">{method}</span>
+                  </div>
+                  <Badge variant="outline" className="bg-gray-700 border-gray-600 text-white">
+                    {count}
+                  </Badge>
                 </div>
-                <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${getMethodColor(method)}`}>
-                  {count}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Top Destinations */}
-        <div className="bg-white p-6 rounded-lg shadow border">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Top Destinations</h3>
-          <div className="space-y-3">
-            {analytics.topDestinations.map((dest, index) => (
-              <div key={dest.destination} className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <span className="text-sm font-medium text-gray-500 mr-2">#{index + 1}</span>
-                  <span className="text-sm font-medium text-gray-900">{dest.destination}</span>
+        <Card className="bg-gray-800 border-gray-700">
+          <CardHeader>
+            <CardTitle className="text-lg text-white">Top Destinations</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {analytics.topDestinations.map((dest, index) => (
+                <div key={dest.destination} className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <span className="text-sm font-medium text-gray-400 mr-2">#{index + 1}</span>
+                    <span className="text-sm font-medium text-white">{dest.destination}</span>
+                  </div>
+                  <span className="text-sm text-gray-400">{dest.count} shipments</span>
                 </div>
-                <span className="text-sm text-gray-600">{dest.count} shipments</span>
-              </div>
-            ))}
-          </div>
-        </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Recent Shipments */}
-      <div className="bg-white rounded-lg shadow border">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-medium text-gray-900">Recent International Shipments</h3>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Customer</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Destination</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Weight</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Revenue</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+      <Card className="bg-gray-800 border-gray-700">
+        <CardHeader>
+          <CardTitle className="text-lg text-white">Recent International Shipments</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow className="border-gray-700">
+                <TableHead className="text-gray-300">Type</TableHead>
+                <TableHead className="text-gray-300">Customer</TableHead>
+                <TableHead className="text-gray-300">Destination</TableHead>
+                <TableHead className="text-gray-300">Status</TableHead>
+                <TableHead className="text-gray-300">Weight</TableHead>
+                <TableHead className="text-gray-300">Revenue</TableHead>
+                <TableHead className="text-gray-300">Date</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {analytics.recentShipments.map((shipment) => (
-                <tr key={shipment.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                <TableRow key={shipment.id} className="border-gray-700">
+                  <TableCell>
+                    <Badge variant="secondary" className="bg-gray-700 text-white">
                       {shipment.type === 'box' ? 'Box' : 'Sack'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {shipment.customer}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {shipment.destination}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(shipment.status)}`}>
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="font-medium text-white">{shipment.customer}</TableCell>
+                  <TableCell className="text-gray-300">{shipment.destination}</TableCell>
+                  <TableCell>
+                    <Badge className={getStatusColor(shipment.status)}>
                       {getStatusText(shipment.status)}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {shipment.weight} kg
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    ₦{shipment.price.toLocaleString()}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(shipment.created_at).toLocaleDateString()}
-                  </td>
-                </tr>
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-gray-300">{shipment.weight} kg</TableCell>
+                  <TableCell className="text-gray-300">{formatCurrency(shipment.price, 'NGN')}</TableCell>
+                  <TableCell className="text-gray-300">{new Date(shipment.created_at).toLocaleDateString()}</TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
     </div>
   );
 };

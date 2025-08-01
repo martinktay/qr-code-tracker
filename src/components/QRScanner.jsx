@@ -232,7 +232,7 @@ const QRScanner = ({ onScan, onClose, isOpen }) => {
             <button
               onClick={startScanning}
               disabled={cameraPermission === 'denied'}
-              className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center"
+              className="w-full bg-primary text-primary-foreground py-3 px-4 rounded-lg hover:bg-primary/90 disabled:opacity-50 flex items-center justify-center"
             >
               <Camera className="w-5 h-5 mr-2" />
               {cameraPermission === 'denied' ? 'Camera Access Denied' : 'Start Scanning'}

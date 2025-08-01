@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fix Authentication - QR Code Tracker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .step {
+            margin: 20px 0;
+            padding: 15px;
+            border-left: 4px solid #007bff;
+            background: #f8f9fa;
+        }
+        .code {
+            background: #f1f3f4;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+        }
+        .button {
+            background: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        .button:hover {
+            background: #0056b3;
+        }
+        .success {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .error {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .warning {
+            color: #ffc107;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Fix Authentication Issue</h1>
+        <p>This tool will fix the 406 error by disabling RLS on the user_accounts table.</p>
+        
+        <div class="step">
+            <h3>Step 1: Open Supabase Dashboard</h3>
+            <p>Go to <a href="https://supabase.com" target="_blank">supabase.com</a> and sign in to your project.</p>
+        </div>
+
+        <div class="step">
+            <h3>Step 2: Open SQL Editor</h3>
+            <p>In your Supabase dashboard:</p>
+            <ol>
+                <li>Click <strong>"SQL Editor"</strong> in the left sidebar</li>
+                <li>Click <strong>"New Query"</strong></li>
+            </ol>
+        </div>
+
+        <div class="step">
+            <h3>Step 3: Copy and Paste This SQL Script</h3>
+            <div class="code" id="sqlScript">-- Disable RLS on user_accounts table
+-- This fixes the 406 authentication error
+
+-- Disable RLS on user_accounts table
+ALTER TABLE user_accounts DISABLE ROW LEVEL SECURITY;
+
+-- Insert default users if they don't exist
+INSERT INTO user_accounts (username, email, hashed_password, role, created_at)
+VALUES 
+    ('admin', 'admin@smartexporters.com', 'YWRtaW4xMjM=', 'admin', NOW()),
+    ('warehouse_staff', 'warehouse@smartexporters.com', 'd2FyZWhvdXNlMTIz', 'warehouse_staff', NOW()),
+    ('customer', 'customer@example.com', 'Y3VzdG9tZXIxMjM=', 'customer', NOW())
+ON CONFLICT (email) DO NOTHING;
+
+-- Verify the fix
+SELECT 'RLS disabled on user_accounts!' as status;
+SELECT user_id, username, email, role FROM user_accounts ORDER BY role, username;</div>
+            <button class="button" onclick="copyToClipboard()">📋 Copy to Clipboard</button>
+        </div>
+
+        <div class="step">
+            <h3>Step 4: Execute the Script</h3>
+            <p>In the SQL Editor:</p>
+            <ol>
+                <li>Paste the SQL script</li>
+                <li>Click <strong>"Run"</strong> button (or press Ctrl+Enter)</li>
+                <li>Wait for the execution to complete</li>
+            </ol>
+        </div>
+
+        <div class="step">
+            <h3>Step 5: Verify Success</h3>
+            <p>You should see output like this:</p>
+            <div class="code">RLS disabled on user_accounts!
+user_id | username | email | role
+1 | admin | admin@smartexporters.com | admin
+2 | warehouse_staff | warehouse@smartexporters.com | warehouse_staff
+3 | customer | customer@example.com | customer</div>
+        </div>
+
+        <div class="step">
+            <h3>Step 6: Test Login</h3>
+            <p>Go back to your app and try logging in with:</p>
+            <ul>
+                <li><strong>Email:</strong> admin@smartexporters.com</li>
+                <li><strong>Password:</strong> admin123</li>
+            </ul>
+            <p class="success">✅ You should no longer see 406 errors!</p>
+        </div>
+
+        <div class="step">
+            <h3>Alternative: Check Current Status</h3>
+            <p>If you want to see what's currently blocking access, run this first:</p>
+            <div class="code">-- Check if RLS is enabled on user_accounts
+SELECT schemaname, tablename, rowsecurity 
+FROM pg_tables 
+WHERE schemaname = 'public' AND tablename = 'user_accounts';</div>
+        </div>
+
+        <div class="step">
+            <h3>🚨 Why This Is Critical</h3>
+            <p>The <strong>406 error</strong> occurs because:</p>
+            <ul>
+                <li>RLS (Row Level Security) is enabled on the user_accounts table</li>
+                <li>No policies allow access to the table</li>
+                <li>Our custom authentication can't access the table</li>
+                <li>Disabling RLS removes all restrictions</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function copyToClipboard() {
+            const sqlScript = document.getElementById('sqlScript').textContent;
+            navigator.clipboard.writeText(sqlScript).then(function() {
+                alert('SQL script copied to clipboard!');
+            }, function(err) {
+                console.error('Could not copy text: ', err);
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = sqlScript;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                alert('SQL script copied to clipboard!');
+            });
+        }
+    </script>
+</body>
+</html> 

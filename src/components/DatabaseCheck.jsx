@@ -184,7 +184,7 @@ const DatabaseCheck = () => {
           <div className="space-x-4">
             <button
               onClick={checkDatabase}
-              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+              className="bg-primary text-primary-foreground px-4 py-2 rounded hover:bg-primary/90"
             >
               Refresh Data
             </button>

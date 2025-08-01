@@ -20,6 +20,10 @@ import {
 } from 'lucide-react';
 import { db } from '../lib/supabase';
 import toast from 'react-hot-toast';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 
 const InteractionTrail = ({ parcelId, parcelType, userRole }) => {
   const [interactions, setInteractions] = useState([]);
@@ -51,20 +55,31 @@ const InteractionTrail = ({ parcelId, parcelType, userRole }) => {
       }
 
       // Combine and sort all interactions by timestamp
+      let interactionCounter = 0;
       const allInteractions = [
-        ...scanHistory.map(scan => ({
-          ...scan,
-          type: 'scan',
-          timestamp: scan.scan_time,
-          interactionId: `scan-${scan.id}`
-        })),
-        ...messages.map(message => ({
-          ...message,
-          type: 'message',
-          timestamp: message.createdat,
-          interactionId: `message-${message.id}`
-        }))
+        ...scanHistory.map((scan, index) => {
+          const key = `scan-${scan.scan_id || `fallback-${Date.now()}-${interactionCounter++}`}`;
+          console.log('Scan interaction key:', key, 'scan_id:', scan.scan_id, 'index:', index);
+          return {
+            ...scan,
+            type: 'scan',
+            timestamp: scan.scan_time,
+            interactionId: key
+          };
+        }),
+        ...messages.map((message, index) => {
+          const key = `message-${message.message_id || `fallback-${Date.now()}-${interactionCounter++}`}`;
+          console.log('Message interaction key:', key, 'message_id:', message.message_id, 'index:', index);
+          return {
+            ...message,
+            type: 'message',
+            timestamp: message.createdat,
+            interactionId: key
+          };
+        })
       ].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+      console.log('All interactions with keys:', allInteractions.map(i => ({ type: i.type, id: i.interactionId })));
 
       setInteractions(allInteractions);
     } catch (error) {
@@ -103,11 +118,11 @@ const InteractionTrail = ({ parcelId, parcelType, userRole }) => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'delivered': return 'text-green-600 bg-green-50';
-      case 'in_transit': return 'text-blue-600 bg-blue-50';
-      case 'out_for_delivery': return 'text-yellow-600 bg-yellow-50';
-      case 'packed': return 'text-gray-600 bg-gray-50';
-      default: return 'text-gray-600 bg-gray-50';
+      case 'delivered': return 'text-white bg-green-600';
+      case 'in_transit': return 'text-white bg-blue-600';
+      case 'out_for_delivery': return 'text-white bg-yellow-600';
+      case 'packed': return 'text-white bg-gray-600';
+      default: return 'text-white bg-gray-600';
     }
   };
 
@@ -126,14 +141,14 @@ const InteractionTrail = ({ parcelId, parcelType, userRole }) => {
   const getInteractionIcon = (interaction) => {
     if (interaction.type === 'scan') {
       switch (interaction.status) {
-        case 'delivered': return <CheckCircle className="w-5 h-5 text-green-600" />;
-        case 'in_transit': return <Truck className="w-5 h-5 text-blue-600" />;
-        case 'out_for_delivery': return <Truck className="w-5 h-5 text-yellow-600" />;
-        case 'packed': return <Package className="w-5 h-5 text-gray-600" />;
-        default: return <Package className="w-5 h-5 text-gray-600" />;
+        case 'delivered': return <CheckCircle className="w-5 h-5 text-green-400" />;
+        case 'in_transit': return <Truck className="w-5 h-5 text-blue-400" />;
+        case 'out_for_delivery': return <Truck className="w-5 h-5 text-yellow-400" />;
+        case 'packed': return <Package className="w-5 h-5 text-gray-400" />;
+        default: return <Package className="w-5 h-5 text-gray-400" />;
       }
     } else if (interaction.type === 'message') {
-      return <MessageSquare className="w-5 h-5 text-blue-600" />;
+      return <MessageSquare className="w-5 h-5 text-blue-400" />;
     }
   };
 
@@ -239,10 +254,10 @@ const InteractionTrail = ({ parcelId, parcelType, userRole }) => {
       {/* Location */}
       {scan.location && (
         <div className="flex items-start space-x-2">
-          <MapPin className="w-4 h-4 text-gray-500 mt-0.5" />
+          <MapPin className="w-4 h-4 text-gray-400 mt-0.5" />
           <div>
-            <p className="text-sm font-medium text-gray-900">Location</p>
-            <p className="text-sm text-gray-600">{scan.location}</p>
+            <p className="text-sm font-medium text-white">Location</p>
+            <p className="text-sm text-gray-400">{scan.location}</p>
           </div>
         </div>
       )}
@@ -250,10 +265,10 @@ const InteractionTrail = ({ parcelId, parcelType, userRole }) => {
       {/* Comments */}
       {scan.comments && (
         <div className="flex items-start space-x-2">
-          <FileText className="w-4 h-4 text-gray-500 mt-0.5" />
+          <FileText className="w-4 h-4 text-gray-400 mt-0.5" />
           <div>
-            <p className="text-sm font-medium text-gray-900">Staff Notes</p>
-            <p className="text-sm text-gray-600">{scan.comments}</p>
+            <p className="text-sm font-medium text-white">Staff Notes</p>
+            <p className="text-sm text-gray-400">{scan.comments}</p>
           </div>
         </div>
       )}
@@ -261,10 +276,10 @@ const InteractionTrail = ({ parcelId, parcelType, userRole }) => {
       {/* Estimated delivery */}
       {scan.estimated_delivery && (
         <div className="flex items-start space-x-2">
-          <Clock className="w-4 h-4 text-gray-500 mt-0.5" />
+          <Clock className="w-4 h-4 text-gray-400 mt-0.5" />
           <div>
-            <p className="text-sm font-medium text-gray-900">Estimated Delivery</p>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm font-medium text-white">Estimated Delivery</p>
+            <p className="text-sm text-gray-400">
               {formatTimestamp(scan.estimated_delivery)}
             </p>
           </div>
@@ -274,14 +289,14 @@ const InteractionTrail = ({ parcelId, parcelType, userRole }) => {
       {/* Photo */}
       {scan.photo_url && (
         <div className="flex items-start space-x-2">
-          <Image className="w-4 h-4 text-gray-500 mt-0.5" />
+          <Image className="w-4 h-4 text-gray-400 mt-0.5" />
           <div className="flex-1">
-            <p className="text-sm font-medium text-gray-900">Photo Evidence</p>
+            <p className="text-sm font-medium text-white">Photo Evidence</p>
             <div className="mt-2">
               <img 
                 src={scan.photo_url} 
                 alt="Scan photo" 
-                className="w-32 h-32 object-cover rounded-lg border"
+                className="w-32 h-32 object-cover rounded-lg border border-gray-600"
               />
             </div>
           </div>
@@ -291,10 +306,10 @@ const InteractionTrail = ({ parcelId, parcelType, userRole }) => {
       {/* GPS Coordinates */}
       {scan.gps_coordinates && (
         <div className="flex items-start space-x-2">
-          <MapPin className="w-4 h-4 text-gray-500 mt-0.5" />
+          <MapPin className="w-4 h-4 text-gray-400 mt-0.5" />
           <div>
-            <p className="text-sm font-medium text-gray-900">GPS Coordinates</p>
-            <p className="text-sm text-gray-600">{scan.gps_coordinates}</p>
+            <p className="text-sm font-medium text-white">GPS Coordinates</p>
+            <p className="text-sm text-gray-400">{scan.gps_coordinates}</p>
           </div>
         </div>
       )}
@@ -305,18 +320,18 @@ const InteractionTrail = ({ parcelId, parcelType, userRole }) => {
     <div className="space-y-3">
       {/* Message content */}
       <div className="flex items-start space-x-2">
-        <MessageSquare className="w-4 h-4 text-gray-500 mt-0.5" />
+        <MessageSquare className="w-4 h-4 text-gray-400 mt-0.5" />
         <div className="flex-1">
-          <p className="text-sm font-medium text-gray-900">Message</p>
-          <p className="text-sm text-gray-600 whitespace-pre-wrap">{message.content}</p>
+          <p className="text-sm font-medium text-white">Message</p>
+          <p className="text-sm text-gray-400 whitespace-pre-wrap">{message.content}</p>
         </div>
       </div>
 
       {/* Language */}
       {message.language && (
         <div className="flex items-center space-x-2">
-          <Globe className="w-4 h-4 text-gray-500" />
-          <span className="text-sm text-gray-600">
+          <Globe className="w-4 h-4 text-gray-400" />
+          <span className="text-sm text-gray-400">
             Language: {message.language.toUpperCase()}
           </span>
         </div>
@@ -326,11 +341,11 @@ const InteractionTrail = ({ parcelId, parcelType, userRole }) => {
       {message.delivery_status && (
         <div className="flex items-center space-x-2">
           {message.delivery_status === 'delivered' ? (
-            <CheckCircle className="w-4 h-4 text-green-500" />
+            <CheckCircle className="w-4 h-4 text-green-400" />
           ) : (
-            <AlertCircle className="w-4 h-4 text-yellow-500" />
+            <AlertCircle className="w-4 h-4 text-yellow-400" />
           )}
-          <span className="text-sm text-gray-600">
+          <span className="text-sm text-gray-400">
             {message.delivery_status === 'delivered' ? 'Delivered' : 'Pending'}
           </span>
         </div>
@@ -339,14 +354,14 @@ const InteractionTrail = ({ parcelId, parcelType, userRole }) => {
       {/* File attachment */}
       {message.file_url && (
         <div className="flex items-start space-x-2">
-          <FileText className="w-4 h-4 text-gray-500 mt-0.5" />
+          <FileText className="w-4 h-4 text-gray-400 mt-0.5" />
           <div className="flex-1">
-            <p className="text-sm font-medium text-gray-900">Attachment</p>
+            <p className="text-sm font-medium text-white">Attachment</p>
             <div className="flex items-center space-x-2 mt-1">
-              <span className="text-sm text-gray-600">{message.file_name}</span>
+              <span className="text-sm text-gray-400">{message.file_name}</span>
               <button 
                 onClick={() => window.open(message.file_url, '_blank')}
-                className="text-blue-600 hover:text-blue-700"
+                className="text-blue-400 hover:text-blue-300"
               >
                 <Eye className="w-4 h-4" />
               </button>
@@ -357,7 +372,7 @@ const InteractionTrail = ({ parcelId, parcelType, userRole }) => {
                   link.download = message.file_name;
                   link.click();
                 }}
-                className="text-green-600 hover:text-green-700"
+                className="text-green-400 hover:text-green-300"
               >
                 <Download className="w-4 h-4" />
               </button>
@@ -370,13 +385,13 @@ const InteractionTrail = ({ parcelId, parcelType, userRole }) => {
       {message.delivery_channel && (
         <div className="flex items-center space-x-2">
           {message.delivery_channel === 'whatsapp' ? (
-            <Phone className="w-4 h-4 text-green-500" />
+            <Phone className="w-4 h-4 text-green-400" />
           ) : message.delivery_channel === 'email' ? (
-            <Mail className="w-4 h-4 text-blue-500" />
+            <Mail className="w-4 h-4 text-blue-400" />
           ) : (
-            <MessageSquare className="w-4 h-4 text-gray-500" />
+            <MessageSquare className="w-4 h-4 text-gray-400" />
           )}
-          <span className="text-sm text-gray-600">
+          <span className="text-sm text-gray-400">
             Sent via {message.delivery_channel}
           </span>
         </div>
@@ -386,162 +401,171 @@ const InteractionTrail = ({ parcelId, parcelType, userRole }) => {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading interaction history...</p>
-        </div>
-      </div>
+      <Card className="bg-gray-800 border-gray-700">
+        <CardContent className="p-6">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
+            <p className="text-gray-300">Loading interaction history...</p>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
   if (interactions.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <div className="text-center">
-          <MessageSquare className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No Interactions Yet</h3>
-          <p className="text-gray-600">
-            No scan history or messages have been recorded for this parcel.
-          </p>
-        </div>
-      </div>
+      <Card className="bg-gray-800 border-gray-700">
+        <CardContent className="p-6">
+          <div className="text-center">
+            <MessageSquare className="w-12 h-12 text-gray-500 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-white mb-2">No Interactions Yet</h3>
+            <p className="text-gray-400">
+              No scan history or messages have been recorded for this parcel.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
   const keyMilestones = getKeyMilestones();
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-semibold text-gray-900">
-          Interaction Trail
-        </h3>
-        <span className="text-sm text-gray-500">
-          {interactions.length} interactions
-        </span>
-      </div>
-
-      {/* Key Milestones */}
-      {keyMilestones.length > 0 && (
-        <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <h4 className="text-sm font-medium text-blue-900 mb-3">Key Milestones</h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-            {keyMilestones.map((milestone, index) => (
-              <div key={index} className="text-center">
-                <div className="text-xs font-medium text-blue-700">{milestone.title}</div>
-                <div className="text-xs text-blue-600">{milestone.description}</div>
-                <div className="text-xs text-blue-500 mt-1">
-                  {formatTimestamp(milestone.timestamp)}
-                </div>
-              </div>
-            ))}
-          </div>
+    <Card className="bg-gray-800 border-gray-700">
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-lg text-white">
+            Interaction Trail
+          </CardTitle>
+          <Badge variant="secondary" className="bg-gray-700 text-white">
+            {interactions.length} interactions
+          </Badge>
         </div>
-      )}
+      </CardHeader>
 
-      <div className="space-y-4">
-        {interactions.map((interaction, index) => {
-          const isExpanded = expandedItems.has(interaction.interactionId);
-          const partyInfo = getPartyInfo(interaction);
-          
-          return (
-            <div key={interaction.interactionId} className="relative">
-              {/* Timeline line */}
-              {index < interactions.length - 1 && (
-                <div className="absolute left-6 top-12 w-0.5 h-16 bg-gray-200" />
-              )}
+      <CardContent className="space-y-6">
+        {/* Key Milestones */}
+        {keyMilestones.length > 0 && (
+          <div className="p-4 bg-blue-900 rounded-lg border border-blue-700">
+            <h4 className="text-sm font-medium text-blue-200 mb-3">Key Milestones</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+              {keyMilestones.map((milestone, index) => (
+                <div key={index} className="text-center">
+                  <div className="text-xs font-medium text-blue-300">{milestone.title}</div>
+                  <div className="text-xs text-blue-200">{milestone.description}</div>
+                  <div className="text-xs text-blue-100 mt-1">
+                    {formatTimestamp(milestone.timestamp)}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
-                             <div className="flex items-start space-x-4">
-                 {/* Icon */}
-                 <div className={`flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center ${
-                   isImportantInteraction(interaction) ? 'bg-blue-100 ring-2 ring-blue-200' : 'bg-gray-100'
-                 }`}>
-                   {getInteractionIcon(interaction)}
-                 </div>
+        <div className="space-y-4">
+          {interactions.map((interaction, index) => {
+            const isExpanded = expandedItems.has(interaction.interactionId);
+            const partyInfo = getPartyInfo(interaction);
+            
+            return (
+              <div key={interaction.interactionId} className="relative">
+                {/* Timeline line */}
+                {index < interactions.length - 1 && (
+                  <div className="absolute left-6 top-12 w-0.5 h-16 bg-gray-600" />
+                )}
 
-                {/* Content */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-2 mb-1">
-                        <h4 className="text-sm font-medium text-gray-900">
-                          {getInteractionTitle(interaction)}
-                        </h4>
-                        {interaction.type === 'scan' && (
-                          <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(interaction.status)}`}>
-                            {getStatusText(interaction.status)}
-                          </span>
-                        )}
-                      </div>
-                      
-                      <p className="text-sm text-gray-600 mb-2">
-                        {getInteractionDescription(interaction)}
-                      </p>
-
-                      <div className="flex items-center space-x-4 text-xs text-gray-500">
-                        <div className="flex items-center space-x-1">
-                          {partyInfo.icon}
-                          <span>{partyInfo.name}</span>
-                        </div>
-                        <span>•</span>
-                        <span>{formatTimestamp(interaction.timestamp)}</span>
-                      </div>
-                    </div>
-
-                    {/* Expand/collapse button */}
-                    <button
-                      onClick={() => toggleExpanded(interaction.interactionId)}
-                      className="ml-4 p-1 text-gray-400 hover:text-gray-600"
-                    >
-                      {isExpanded ? (
-                        <ChevronUp className="w-4 h-4" />
-                      ) : (
-                        <ChevronDown className="w-4 h-4" />
-                      )}
-                    </button>
+                <div className="flex items-start space-x-4">
+                  {/* Icon */}
+                  <div className={`flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center ${
+                    isImportantInteraction(interaction) ? 'bg-blue-900 ring-2 ring-blue-700' : 'bg-gray-700'
+                  }`}>
+                    {getInteractionIcon(interaction)}
                   </div>
 
-                  {/* Expanded details */}
-                  {isExpanded && (
-                    <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                      {interaction.type === 'scan' 
-                        ? renderScanDetails(interaction)
-                        : renderMessageDetails(interaction)
-                      }
+                  {/* Content */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2 mb-1">
+                          <h4 className="text-sm font-medium text-white">
+                            {getInteractionTitle(interaction)}
+                          </h4>
+                          {interaction.type === 'scan' && (
+                            <Badge variant="outline" className={getStatusColor(interaction.status)}>
+                              {getStatusText(interaction.status)}
+                            </Badge>
+                          )}
+                        </div>
+                        
+                        <p className="text-sm text-gray-400 mb-2">
+                          {getInteractionDescription(interaction)}
+                        </p>
+
+                        <div className="flex items-center space-x-4 text-xs text-gray-500">
+                          <div className="flex items-center space-x-1">
+                            {partyInfo.icon}
+                            <span>{partyInfo.name}</span>
+                          </div>
+                          <span>•</span>
+                          <span>{formatTimestamp(interaction.timestamp)}</span>
+                        </div>
+                      </div>
+
+                      {/* Expand/collapse button */}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => toggleExpanded(interaction.interactionId)}
+                        className="ml-4 p-1 text-gray-400 hover:text-white hover:bg-gray-700"
+                      >
+                        {isExpanded ? (
+                          <ChevronUp className="w-4 h-4" />
+                        ) : (
+                          <ChevronDown className="w-4 h-4" />
+                        )}
+                      </Button>
                     </div>
-                  )}
+
+                    {/* Expanded details */}
+                    {isExpanded && (
+                      <div className="mt-4 p-4 bg-gray-700 rounded-lg">
+                        {interaction.type === 'scan' 
+                          ? renderScanDetails(interaction)
+                          : renderMessageDetails(interaction)
+                        }
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
 
-      {/* Summary */}
-      <div className="mt-6 pt-4 border-t border-gray-200">
+        {/* Summary */}
+        <Separator className="bg-gray-600" />
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
           <div className="text-center">
-            <div className="font-medium text-gray-900">
+            <div className="font-medium text-white">
               {interactions.filter(i => i.type === 'scan').length}
             </div>
-            <div className="text-gray-600">Status Updates</div>
+            <div className="text-gray-400">Status Updates</div>
           </div>
           <div className="text-center">
-            <div className="font-medium text-gray-900">
+            <div className="font-medium text-white">
               {interactions.filter(i => i.type === 'message').length}
             </div>
-            <div className="text-gray-600">Messages</div>
+            <div className="text-gray-400">Messages</div>
           </div>
           <div className="text-center">
-            <div className="font-medium text-gray-900">
+            <div className="font-medium text-white">
               {interactions.filter(i => i.type === 'scan' && i.status === 'delivered').length > 0 ? 'Yes' : 'No'}
             </div>
-            <div className="text-gray-600">Delivered</div>
+            <div className="text-gray-400">Delivered</div>
           </div>
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 };
 
